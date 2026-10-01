@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hostel Management System</title>
+    <title>Hostel Management System - Login</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,59 +11,147 @@
 
     <div class="login-container">
 
-        <h1>Hostel Management System</h1>
-        <p class="login-subtitle">Login to continue</p>
+        <div class="login-left">
+            <h1>Hostel Management</h1>
+            <p>Student & Hostel Administration System</p>
+        </div>
 
-        <form id="loginForm">
+        <div class="login-box">
 
-            <label>User ID</label>
-            <input type="text" id="userId" placeholder="Enter User ID" required>
+            <h2>Login</h2>
+            <p class="login-subtitle">Enter your credentials</p>
 
-            <label>Password</label>
-            <input type="password" id="password" placeholder="Enter Password" required>
+            <form id="loginForm">
 
-            <button type="submit" class="login-btn">Login</button>
+                <label for="userId">User ID</label>
+                <input
+                    type="text"
+                    id="userId"
+                    placeholder="Enter User ID"
+                    required
+                >
 
-            <p id="loginError" class="error"></p>
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter Password"
+                    required
+                >
 
-        </form>
+                <button type="submit" class="login-btn">
+                    Login
+                </button>
+
+            </form>
+
+            <p id="loginMessage" class="login-message"></p>
+
+        </div>
 
     </div>
 
     <script>
-        document.getElementById("loginForm").addEventListener("submit", function(event) {
+        document.getElementById("loginForm").addEventListener("submit", async function(event) {
 
             event.preventDefault();
 
             const userId = document.getElementById("userId").value;
             const password = document.getElementById("password").value;
+            const message = document.getElementById("loginMessage");
 
             /*
-             * TEMPORARY LOGIN DATA
+             * C++ BACKEND API
              *
-             * Later this will be checked by your C++ backend
-             * against the MySQL database.
+             * Your C++ backend should receive:
+             * {
+             *     "userId": "...",
+             *     "password": "..."
+             * }
+             *
+             * and return:
+             *
+             * {
+             *     "success": true,
+             *     "role": "admin"
+             * }
+             *
+             * OR
+             *
+             * {
+             *     "success": true,
+             *     "role": "student"
+             * }
              */
 
-            if (userId === "admin" && password === "admin123") {
+            try {
 
-                sessionStorage.setItem("loggedInUser", userId);
-                sessionStorage.setItem("userType", "admin");
+                const response = await fetch("http://localhost:8080/api/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        password: password
+                    })
+                });
 
-                window.location.href = "admin.html";
+                const data = await response.json();
 
-            } else if (userId === "STU001" && password === "1234") {
+                if (data.success) {
 
-                sessionStorage.setItem("loggedInUser", userId);
-                sessionStorage.setItem("userType", "student");
+                    sessionStorage.setItem("userId", userId);
+                    sessionStorage.setItem("role", data.role);
 
-                window.location.href = "student.html";
+                    if (data.role === "admin") {
+                        window.location.href = "admin.html";
+                    }
+                    else {
+                        window.location.href = "student.html";
+                    }
 
-            } else {
+                }
+                else {
 
-                document.getElementById("loginError").innerText =
-                    "Invalid User ID or Password.";
+                    message.textContent = "Invalid User ID or Password.";
+                    message.style.color = "red";
 
+                }
+
+            }
+            catch (error) {
+
+                /*
+                 * DEMO LOGIN
+                 *
+                 * Remove this section when your C++ backend
+                 * is connected.
+                 */
+
+                if (userId === "admin" && password === "admin123") {
+
+                    sessionStorage.setItem("userId", "admin");
+                    sessionStorage.setItem("role", "admin");
+
+                    window.location.href = "admin.html";
+
+                }
+                else if (userId === "STU001" && password === "student123") {
+
+                    sessionStorage.setItem("userId", "STU001");
+                    sessionStorage.setItem("role", "student");
+
+                    window.location.href = "student.html";
+
+                }
+                else {
+
+                    message.textContent =
+                        "Invalid User ID or Password.";
+
+                    message.style.color = "red";
+                }
             }
 
         });

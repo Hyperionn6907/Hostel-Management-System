@@ -1,97 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Student - Hostel Management</title>
+
     <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
-    <header class="topbar">
+<div class="student-layout">
+
+    <!-- HEADER -->
+
+    <header class="student-header">
 
         <div>
-            <h2>Hostel Management System</h2>
+
+            <h1>Hostel Management System</h1>
+
+            <p>Student Portal</p>
+
         </div>
 
-        <button onclick="logout()" class="logout-btn">
+        <button class="logout-button"
+                onclick="logout()">
             Logout
         </button>
 
     </header>
 
-    <main class="student-container">
 
-        <h1>Student Dashboard</h1>
+    <main class="student-main">
 
-        <!-- Student Information -->
+        <h2>Welcome, <span id="studentName">Student</span></h2>
 
-        <section class="card">
 
-            <h2>Student Details</h2>
+        <!-- STUDENT DETAILS -->
 
-            <div class="student-details">
+        <div class="student-details">
 
-                <div>
-                    <span>Name</span>
-                    <strong id="studentName">Rahul Kumar</strong>
-                </div>
+            <div class="detail-card">
 
-                <div>
-                    <span>Roll Number</span>
-                    <strong id="rollNumber">STU001</strong>
-                </div>
+                <h3>Name</h3>
 
-                <div>
-                    <span>Room Number</span>
-                    <strong id="roomNumber">A-101</strong>
-                </div>
-
-                <div>
-                    <span>Department</span>
-                    <strong id="department">CSE</strong>
-                </div>
+                <p id="studentNameCard">
+                    Loading...
+                </p>
 
             </div>
 
-        </section>
+
+            <div class="detail-card">
+
+                <h3>Roll Number</h3>
+
+                <p id="rollNumber">
+                    Loading...
+                </p>
+
+            </div>
 
 
-        <!-- Complaint Statistics -->
+            <div class="detail-card">
 
-        <section class="stats">
+                <h3>Room Number</h3>
 
-            <div class="stat-card">
+                <p id="roomNumber">
+                    Loading...
+                </p>
+
+            </div>
+
+
+            <div class="detail-card">
+
                 <h3>Complaints Registered</h3>
-                <p id="totalComplaints">5</p>
+
+                <p id="complaintsRegistered">
+                    0
+                </p>
+
             </div>
 
-            <div class="stat-card">
+
+            <div class="detail-card">
+
                 <h3>Complaints Resolved</h3>
-                <p id="resolvedComplaints">3</p>
+
+                <p id="complaintsResolved">
+                    0
+                </p>
+
             </div>
 
-        </section>
+        </div>
 
 
-        <!-- Add Complaint -->
+        <!-- ADD COMPLAINT -->
 
-        <section class="card">
+        <div class="complaint-box">
 
             <h2>Register a Complaint</h2>
 
-            <form id="complaintForm">
+            <p>
+                Enter your complaint below.
+            </p>
 
-                <label>Complaint</label>
+            <form id="complaintForm">
 
                 <textarea
                     id="complaintText"
-                    placeholder="Enter your complaint..."
+                    placeholder="Describe your complaint..."
                     required>
                 </textarea>
 
-                <button type="submit" class="primary-btn">
+                <button type="submit"
+                        class="primary-btn">
                     Submit Complaint
                 </button>
 
@@ -99,67 +131,44 @@
 
             <p id="complaintMessage"></p>
 
-        </section>
+        </div>
+
+
+        <!-- PREVIOUS COMPLAINTS -->
+
+        <div class="previous-complaints">
+
+            <h2>My Complaints</h2>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Complaint</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="studentComplaintsBody">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
 
     </main>
 
-
-    <script>
-
-        // Check whether user is logged in
-
-        const userType = sessionStorage.getItem("userType");
-
-        if (userType !== "student") {
-            window.location.href = "login.html";
-        }
+</div>
 
 
-        // Submit complaint
-
-        document.getElementById("complaintForm")
-            .addEventListener("submit", function(event) {
-
-            event.preventDefault();
-
-            const complaint =
-                document.getElementById("complaintText").value;
-
-            /*
-             * Later:
-             *
-             * complaint will be sent to the C++ backend.
-             *
-             * C++ will insert:
-             *
-             * student_id
-             * complaint
-             * status = "Not Resolved"
-             *
-             * into MySQL.
-             */
-
-            console.log("Complaint:", complaint);
-
-            document.getElementById("complaintMessage").innerText =
-                "Complaint submitted successfully.";
-
-            document.getElementById("complaintText").value = "";
-
-        });
-
-
-        // Logout
-
-        function logout() {
-
-            sessionStorage.clear();
-
-            window.location.href = "login.html";
-
-        }
-
-    </script>
+<script src="student.js"></script>
 
 </body>
 </html>
