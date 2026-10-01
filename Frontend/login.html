@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="login-body">
+
+    <div class="login-container">
+
+        <h1>Hostel Management System</h1>
+        <p class="login-subtitle">Login to continue</p>
+
+        <form id="loginForm">
+
+            <label>User ID</label>
+            <input type="text" id="userId" placeholder="Enter User ID" required>
+
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter Password" required>
+
+            <button type="submit" class="login-btn">Login</button>
+
+            <p id="loginError" class="error"></p>
+
+        </form>
+
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+            const userId = document.getElementById("userId").value;
+            const password = document.getElementById("password").value;
+
+            /*
+             * TEMPORARY LOGIN DATA
+             *
+             * Later this will be checked by your C++ backend
+             * against the MySQL database.
+             */
+
+            if (userId === "admin" && password === "admin123") {
+
+                sessionStorage.setItem("loggedInUser", userId);
+                sessionStorage.setItem("userType", "admin");
+
+                window.location.href = "admin.html";
+
+            } else if (userId === "STU001" && password === "1234") {
+
+                sessionStorage.setItem("loggedInUser", userId);
+                sessionStorage.setItem("userType", "student");
+
+                window.location.href = "student.html";
+
+            } else {
+
+                document.getElementById("loginError").innerText =
+                    "Invalid User ID or Password.";
+
+            }
+
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="admin-layout">
+
+        <!-- Sidebar -->
+
+        <aside class="sidebar">
+
+            <h2>Hostel Admin</h2>
+
+            <nav>
+
+                <button onclick="showSection('dashboard')">
+                    Dashboard
+                </button>
+
+                <button onclick="showSection('students')">
+                    Students
+                </button>
+
+                <button onclick="showSection('rooms')">
+                    Rooms
+                </button>
+
+                <button onclick="showSection('allocations')">
+                    Allocations
+                </button>
+
+                <button onclick="showSection('complaints')">
+                    Complaints
+                </button>
+
+                <button onclick="logout()" class="sidebar-logout">
+                    Logout
+                </button>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- Main Content -->
+
+        <main class="admin-content">
+
+
+            <!-- DASHBOARD -->
+
+            <section id="dashboard" class="admin-section">
+
+                <h1>Dashboard</h1>
+
+                <div class="dashboard-cards">
+
+                    <div class="dashboard-card">
+
+                        <h3>Total Students</h3>
+
+                        <p>250</p>
+
+                    </div>
+
+
+                    <div class="dashboard-card">
+
+                        <h3>Total Rooms</h3>
+
+                        <p>100</p>
+
+                    </div>
+
+
+                    <div class="dashboard-card">
+
+                        <h3>Occupied Rooms</h3>
+
+                        <p>85</p>
+
+                    </div>
+
+
+                    <div class="dashboard-card">
+
+                        <h3>Unresolved Complaints</h3>
+
+                        <p>12</p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- STUDENTS -->
+
+            <section id="students" class="admin-section hidden">
+
+                <div class="section-header">
+
+                    <h1>Students</h1>
+
+                    <button class="primary-btn"
+                            onclick="showAddStudent()">
+                        + Add Student
+                    </button>
+
+                </div>
+
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Roll Number</th>
+                            <th>Department</th>
+                            <th>Phone</th>
+                            <th>Room</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>STU001</td>
+                            <td>Rahul Kumar</td>
+                            <td>CS101</td>
+                            <td>CSE</td>
+                            <td>9876543210</td>
+                            <td>A-101</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>STU002</td>
+                            <td>Arun Kumar</td>
+                            <td>CS102</td>
+                            <td>CSE</td>
+                            <td>9876543211</td>
+                            <td>A-102</td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+
+                <!-- Add Student -->
+
+                <div id="addStudentBox"
+                     class="card hidden">
+
+                    <h2>Add Student</h2>
+
+                    <form id="studentForm">
+
+                        <input type="text"
+                               placeholder="Student ID"
+                               required>
+
+                        <input type="text"
+                               placeholder="Name"
+                               required>
+
+                        <input type="text"
+                               placeholder="Roll Number"
+                               required>
+
+                        <input type="text"
+                               placeholder="Department"
+                               required>
+
+                        <input type="text"
+                               placeholder="Phone Number"
+                               required>
+
+                        <input type="text"
+                               placeholder="Room Number">
+
+                        <button class="primary-btn"
+                                type="submit">
+                            Add Student
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+            <!-- ROOMS -->
+
+            <section id="rooms"
+                     class="admin-section hidden">
+
+                <h1>Rooms</h1>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Room Number</th>
+                            <th>Block</th>
+                            <th>Capacity</th>
+                            <th>People</th>
+                            <th>Students</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>A-101</td>
+                            <td>A</td>
+                            <td>3</td>
+                            <td>2</td>
+                            <td>
+                                CS101 - CSE<br>
+                                CS102 - CSE
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>A-102</td>
+                            <td>A</td>
+                            <td>3</td>
+                            <td>1</td>
+                            <td>
+                                ME101 - Mechanical
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>B-201</td>
+                            <td>B</td>
+                            <td>2</td>
+                            <td>0</td>
+                            <td>Vacant</td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+
+            <!-- ALLOCATIONS -->
+
+            <section id="allocations"
+                     class="admin-section hidden">
+
+                <h1>Room Allocations</h1>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Room</th>
+                            <th>Date Allocated</th>
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>STU001</td>
+
+                            <td>Rahul Kumar</td>
+
+                            <td>A-101</td>
+
+                            <td>01-08-2026</td>
+
+                            <td>
+                                <button class="edit-btn">
+                                    Edit
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>STU002</td>
+
+                            <td>Arun Kumar</td>
+
+                            <td>A-102</td>
+
+                            <td>02-08-2026</td>
+
+                            <td>
+                                <button class="edit-btn">
+                                    Edit
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+
+            <!-- COMPLAINTS -->
+
+            <section id="complaints"
+                     class="admin-section hidden">
+
+                <h1>Complaints</h1>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Complaint ID</th>
+                            <th>Student ID</th>
+                            <th>Complaint</th>
+                            <th>Status</th>
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>C001</td>
+
+                            <td>STU001</td>
+
+                            <td>
+                                Fan is not working
+                            </td>
+
+                            <td>
+                                <span class="status unresolved">
+                                    Not Resolved
+                                </span>
+                            </td>
+
+                            <td>
+
+                                <button class="resolve-btn">
+                                    Mark Resolved
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>C002</td>
+
+                            <td>STU002</td>
+
+                            <td>
+                                Water leakage
+                            </td>
+
+                            <td>
+                                <span class="status resolved">
+                                    Resolved
+                                </span>
+                            </td>
+
+                            <td>
+                                —
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        // Check admin login
+
+        const userType = sessionStorage.getItem("userType");
+
+        if (userType !== "admin") {
+            window.location.href = "login.html";
+        }
+
+
+        // Display sections
+
+        function showSection(sectionName) {
+
+            const sections =
+                document.querySelectorAll(".admin-section");
+
+            sections.forEach(section => {
+                section.classList.add("hidden");
+            });
+
+            document
+                .getElementById(sectionName)
+                .classList.remove("hidden");
+
+        }
+
+
+        // Add student form
+
+        function showAddStudent() {
+
+            document
+                .getElementById("addStudentBox")
+                .classList.toggle("hidden");
+
+        }
+
+
+        document
+            .getElementById("studentForm")
+            .addEventListener("submit", function(event) {
+
+                event.preventDefault();
+
+                /*
+                 * Later this information will be sent
+                 * to the C++ backend.
+                 *
+                 * C++ will insert the student into MySQL.
+                 */
+
+                alert("Student added successfully.");
+
+                this.reset();
+
+            });
+
+
+        // Logout
+
+        function logout() {
+
+            sessionStorage.clear();
+
+            window.location.href = "login.html";
+
+        }
+
+    </script>
+
+</body>
+
+</html>
