@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "MSYS2 UCRT64",
+            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64",
+            "includePath": [
+                "${workspaceFolder}/Backend",
+                "C:/msys64/ucrt64/include",
+                "C:/msys64/ucrt64/include/c++/15.2.0",
+                "C:/msys64/ucrt64/include/c++/15.2.0/x86_64-w64-mingw32"
+            ]
+        }
+    ],
+    "version": 4
+}
