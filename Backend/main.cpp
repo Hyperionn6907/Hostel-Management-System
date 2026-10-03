@@ -1,4 +1,3 @@
-//C++ OOP CODE//
 
 #include <iostream>
 #include <string>
