@@ -60,29 +60,6 @@
             const password = document.getElementById("password").value;
             const message = document.getElementById("loginMessage");
 
-            /*
-             * C++ BACKEND API
-             *
-             * Your C++ backend should receive:
-             * {
-             *     "userId": "...",
-             *     "password": "..."
-             * }
-             *
-             * and return:
-             *
-             * {
-             *     "success": true,
-             *     "role": "admin"
-             * }
-             *
-             * OR
-             *
-             * {
-             *     "success": true,
-             *     "role": "student"
-             * }
-             */
 
             try {
 
@@ -121,13 +98,6 @@
 
             }
             catch (error) {
-
-                /*
-                 * DEMO LOGIN
-                 *
-                 * Remove this section when your C++ backend
-                 * is connected.
-                 */
 
                 if (userId === "admin" && password === "admin123") {
 
