@@ -1,0 +1,144 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.login-body {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #102747, #1d4ed8);
+}
+
+.login-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    max-width: 1100px;
+    min-height: 580px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+}
+
+.login-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+    text-align: center;
+    color: white;
+    background: linear-gradient(145deg, #17315b, #2563eb);
+}
+
+.login-left h1 {
+    font-size: clamp(30px, 3vw, 44px);
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.login-left p {
+    color: #dbeafe;
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.login-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 55px;
+    background: #ffffff;
+}
+
+.login-box h2 {
+    color: #17315b;
+    font-size: 34px;
+    margin-bottom: 12px;
+}
+
+.login-subtitle {
+    color: #64748b;
+    margin-bottom: 30px;
+}
+
+#loginForm {
+    width: 100%;
+}
+
+#loginForm label {
+    display: block;
+    margin: 20px 0 9px;
+    color: #334155;
+    font-weight: bold;
+}
+
+#loginForm input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#loginForm input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.login-btn {
+    width: 100%;
+    margin-top: 30px;
+    padding: 15px;
+    border: none;
+    border-radius: 9px;
+    color: white;
+    background: #2563eb;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.login-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.login-message {
+    margin-top: 18px;
+    text-align: center;
+}
+
+@media (max-width: 750px) {
+    .login-body {
+        padding: 16px;
+    }
+
+    .login-container {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+    }
+
+    .login-left {
+        min-height: 200px;
+        padding: 30px 20px;
+    }
+
+    .login-left h1 {
+        font-size: 30px;
+    }
+
+    .login-box {
+        padding: 30px 24px;
+    }
+}
