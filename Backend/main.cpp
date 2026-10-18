@@ -129,6 +129,118 @@ int main() {
         }
     });
 
+        server.Get(R"(/api/students/(\d+))",
+        [&](const httplib::Request& req, httplib::Response& res) {
+
+        string id = req.matches[1];
+
+        string query =
+            "SELECT student_id, name, email, department, phone "
+            "FROM students WHERE student_id = " + id;
+
+        if (mysql_query(conn, query.c_str()) != 0) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Database query failed"})",
+                "application/json"
+            );
+            return;
+        }
+
+        MYSQL_RES* result = mysql_store_result(conn);
+
+        if (result == NULL) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Could not read database result"})",
+                "application/json"
+            );
+            return;
+        }
+
+        MYSQL_ROW row = mysql_fetch_row(result);
+
+        if (row != NULL) {
+            json student;
+
+            student["success"] = true;
+            student["student_id"] = row[0] ? row[0] : "";
+            student["name"] = row[1] ? row[1] : "";
+            student["email"] = row[2] ? row[2] : "";
+            student["department"] = row[3] ? row[3] : "";
+            student["phone"] = row[4] ? row[4] : "";
+
+            res.set_content(student.dump(), "application/json");
+        } else {
+            res.status = 404;
+            res.set_content(
+                R"({"success":false,"message":"Student not found"})",
+                "application/json"
+            );
+        }
+
+        mysql_free_result(result);
+    });
+
+    
+    server.Post("/api/complaints",
+        [&](const httplib::Request& req, httplib::Response& res) {
+
+        try {
+            json data = json::parse(req.body);
+
+            int studentId = data.at("student_id").get<int>();
+            string description = data.at("description").get<string>();
+
+            if (description.empty() || description.length() > 500) {
+                res.status = 400;
+                res.set_content(
+                    R"({"success":false,"message":"Description must contain 1 to 500 characters"})",
+                    "application/json"
+                );
+                return;
+            }
+
+            char escapedDescription[1001];
+
+            mysql_real_escape_string(
+                conn,
+                escapedDescription,
+                description.c_str(),
+                description.length()
+            );
+
+            string query =
+                "INSERT INTO complaints (student_id, description) VALUES (" +
+                to_string(studentId) + ", '" + escapedDescription + "')";
+
+            if (mysql_query(conn, query.c_str()) != 0) {
+                cout << "Complaint insert error: "
+                     << mysql_error(conn) << endl;
+
+                res.status = 500;
+                res.set_content(
+                    R"({"success":false,"message":"Could not save complaint"})",
+                    "application/json"
+                );
+                return;
+            }
+
+            res.set_content(
+                R"({"success":true,"message":"Complaint submitted successfully","status":"Pending"})",
+                "application/json"
+            );
+
+        } catch (const exception& e) {
+            res.status = 400;
+            res.set_content(
+                R"({"success":false,"message":"Invalid complaint request"})",
+                "application/json"
+            );
+        }
+    });
+
+
     cout << "Server started on port 8080...\n";
 
     server.listen("0.0.0.0", 8080);
