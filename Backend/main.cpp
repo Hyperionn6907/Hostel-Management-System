@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <mysql.h>
 #include "httplib.h"
@@ -239,6 +238,108 @@ int main() {
             );
         }
     });
+
+    server.Get(R"(/api/complaints/(\d+))",
+    [&](const httplib::Request& req, httplib::Response& res) {
+
+    string studentId = req.matches[1];
+
+    string query =
+        "SELECT complaint_id, description, status, created_at "
+        "FROM complaints WHERE student_id = " + studentId +
+        " ORDER BY complaint_id DESC";
+
+    if (mysql_query(conn, query.c_str()) != 0) {
+        res.status = 500;
+        res.set_content(
+            R"({"success":false,"message":"Database query failed"})",
+            "application/json"
+        );
+        return;
+    }
+
+    MYSQL_RES* result = mysql_store_result(conn);
+
+    if (result == NULL) {
+        res.status = 500;
+        res.set_content(
+            R"({"success":false,"message":"Could not read database result"})",
+            "application/json"
+        );
+        return;
+    }
+
+    json complaints = json::array();
+    MYSQL_ROW row;
+
+    while ((row = mysql_fetch_row(result)) != NULL) {
+        json complaint;
+        complaint["complaint_id"] = row[0] ? row[0] : "";
+        complaint["description"] = row[1] ? row[1] : "";
+        complaint["status"] = row[2] ? row[2] : "";
+        complaint["created_at"] = row[3] ? row[3] : "";
+
+        complaints.push_back(complaint);
+    }
+
+    mysql_free_result(result);
+
+    json response;
+    response["success"] = true;
+    response["complaints"] = complaints;
+
+    res.set_content(response.dump(), "application/json");
+});
+
+server.Get("/api/complaints",
+    [&](const httplib::Request& req, httplib::Response& res) {
+
+    string query =
+        "SELECT complaint_id, student_id, description, status, created_at "
+        "FROM complaints ORDER BY complaint_id DESC";
+
+    if (mysql_query(conn, query.c_str()) != 0) {
+        res.status = 500;
+        res.set_content(
+            R"({"success":false,"message":"Database query failed"})",
+            "application/json"
+        );
+        return;
+    }
+
+    MYSQL_RES* result = mysql_store_result(conn);
+
+    if (result == NULL) {
+        res.status = 500;
+        res.set_content(
+            R"({"success":false,"message":"Could not read database result"})",
+            "application/json"
+        );
+        return;
+    }
+
+    json complaints = json::array();
+    MYSQL_ROW row;
+
+    while ((row = mysql_fetch_row(result)) != NULL) {
+        json complaint;
+        complaint["complaint_id"] = row[0] ? row[0] : "";
+        complaint["student_id"] = row[1] ? row[1] : "";
+        complaint["description"] = row[2] ? row[2] : "";
+        complaint["status"] = row[3] ? row[3] : "";
+        complaint["created_at"] = row[4] ? row[4] : "";
+
+        complaints.push_back(complaint);
+    }
+
+    mysql_free_result(result);
+
+    json response;
+    response["success"] = true;
+    response["complaints"] = complaints;
+
+    res.set_content(response.dump(), "application/json");
+});
 
 
     cout << "Server started on port 8080...\n";
