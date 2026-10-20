@@ -1,5 +1,6 @@
 #include <iostream>
 #include <mysql.h>
+#include <cstdlib>
 #include "httplib.h"
 #include "json.hpp"
 
@@ -9,25 +10,33 @@ using json = nlohmann::json;
 #include "student.cpp"
 
 int main() {
-    MYSQL* conn = mysql_init(NULL);
+    
+const char* dbHost = getenv("HOSTEL_DB_HOST");
+const char* dbUser = getenv("HOSTEL_DB_USER");
+const char* dbPassword = getenv("HOSTEL_DB_PASSWORD");
+const char* dbName = getenv("HOSTEL_DB_NAME");
 
-    conn = mysql_real_connect(
-        conn,
-        "localhost",
-        "root",
-        "ashu@2025",
-        "hostel_management",
-        3306,
-        NULL,
-        0
-    );
+if (dbHost == NULL || dbUser == NULL ||
+    dbPassword == NULL || dbName == NULL) {
+    cout << "Database environment variables are missing!\n";
+    return 1;
+}
 
-    if (conn == NULL) {
-        cout << "Database connection failed\n";
-        return 1;
-    }
+MYSQL* conn = mysql_init(NULL);
 
-    cout << "Database connected successfully!\n";
+if (conn == NULL) {
+    cout << "MySQL initialization failed\n";
+    return 1;
+}
+
+if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
+                       dbName, 3306, NULL, 0) == NULL) {
+    cout << "Database connection failed: "
+         << mysql_error(conn) << endl;
+    mysql_close(conn);
+    return 1;
+}
+
 
     httplib::Server server;
 
