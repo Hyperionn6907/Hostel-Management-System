@@ -129,8 +129,6 @@
         }
     }
 </style>
-
-    </style>
 </head>
 <body>
     <h1>Student Dashboard</h1>
@@ -153,6 +151,13 @@
 
         <button type="submit">Submit Complaint</button>
     </form>
+    <hr>
+
+<h2>My Complaint History</h2>
+
+<div id="complaintHistory">
+    Loading complaints...
+</div>
 
     <p id="complaintMessage"></p>
 
@@ -236,14 +241,18 @@
 
                     const data = await response.json();
 
+                   
                     if (response.ok && data.success) {
                         message.textContent =
                             "Complaint submitted successfully! Status: Pending.";
+
                         document.getElementById("complaintForm").reset();
+                        await loadComplaintHistory();
                     } else {
                         message.textContent =
                             data.message || "Failed to submit complaint.";
                     }
+
                 } catch (error) {
                     message.textContent =
                         "Could not connect to the backend.";
@@ -251,6 +260,49 @@
             });
 
         loadStudentDetails();
+                async function loadComplaintHistory() {
+            const history = document.getElementById("complaintHistory");
+
+            try {
+                const response = await fetch(
+                    `http://localhost:8080/api/complaints/${userId}`
+                );
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    history.textContent = "Failed to load complaints.";
+                    return;
+                }
+
+                if (data.complaints.length === 0) {
+                    history.textContent = "No complaints submitted yet.";
+                    return;
+                }
+
+                history.innerHTML = "";
+
+                data.complaints.forEach(complaint => {
+                    const item = document.createElement("div");
+
+                    const details = document.createElement("p");
+                    details.textContent =
+                        "Complaint ID: " + complaint.complaint_id +
+                        " | Description: " + complaint.description +
+                        " | Status: " + complaint.status +
+                        " | Date: " + complaint.created_at;
+
+                    item.appendChild(details);
+                    history.appendChild(item);
+                });
+
+            } catch (error) {
+                history.textContent =
+                    "Could not connect to the backend.";
+            }
+        }
+
+        loadComplaintHistory();
     </script>
 </body>
 </html>
