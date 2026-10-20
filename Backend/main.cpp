@@ -291,6 +291,48 @@ int main() {
     res.set_content(response.dump(), "application/json");
 });
 
+server.Get("/api/admin/dashboard",
+    [&](const httplib::Request& req, httplib::Response& res) {
+
+    json response;
+
+    string query =
+        "SELECT "
+        "(SELECT COUNT(*) FROM students), "
+        "(SELECT COUNT(*) FROM rooms), "
+        "(SELECT COUNT(*) FROM allocations), "
+        "(SELECT COUNT(*) FROM complaints WHERE status <> 'Resolved')";
+
+    if (mysql_query(conn, query.c_str()) != 0) {
+        res.status = 500;
+        response["success"] = false;
+        response["message"] = mysql_error(conn);
+        res.set_content(response.dump(), "application/json");
+        return;
+    }
+
+    MYSQL_RES* result = mysql_store_result(conn);
+
+    if (result == NULL) {
+        res.status = 500;
+        response["success"] = false;
+        response["message"] = mysql_error(conn);
+        res.set_content(response.dump(), "application/json");
+        return;
+    }
+
+    MYSQL_ROW row = mysql_fetch_row(result);
+
+    response["success"] = true;
+    response["students"] = row[0] ? stoi(row[0]) : 0;
+    response["totalRooms"] = row[1] ? stoi(row[1]) : 0;
+    response["occupiedRooms"] = row[2] ? stoi(row[2]) : 0;
+    response["unresolvedComplaints"] = row[3] ? stoi(row[3]) : 0;
+
+    mysql_free_result(result);
+
+    res.set_content(response.dump(), "application/json");
+});
 server.Get("/api/complaints",
     [&](const httplib::Request& req, httplib::Response& res) {
 

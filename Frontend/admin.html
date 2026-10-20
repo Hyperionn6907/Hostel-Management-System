@@ -38,17 +38,19 @@
                 Rooms
             </button>
 
-            <button class="nav-btn">
-                Allocations
-            </button>
+            
+        <button class="nav-btn">
+             Allocations
+        </button>
 
-            <button class="nav-btn">
+        <button class="nav-btn" id="complaintsBtn">
                 Complaints
-            </button>
+        </button>
 
-            <button class="nav-btn logout-btn">
-                Logout
-            </button>
+<button class="nav-btn logout-btn">
+    Logout
+</button>
+
 
         </nav>
 
@@ -99,10 +101,87 @@
             </div>
 
         </section>
+        
+<section id="complaints" class="content-section" style="display: none;">
+
+    <h2>Manage Complaints</h2>
+
+    <p id="complaintMessage"></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Complaint ID</th>
+                <th>Student ID</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="complaintTableBody">
+            <tr>
+                <td colspan="6">Click Complaints to load records.</td>
+            </tr>
+        </tbody>
+    </table>
+
+</section>
+
 
     </main>
 
 </div>
+
+
+<script>
+    document.getElementById("complaintsBtn").addEventListener("click", async function() {
+        document.getElementById("dashboard").style.display = "none";
+        document.getElementById("complaints").style.display = "block";
+        document.getElementById("pageTitle").textContent = "Complaints";
+
+        const table = document.getElementById("complaintTableBody");
+        table.innerHTML = "<tr><td colspan='6'>Loading complaints...</td></tr>";
+
+        try {
+            const response = await fetch("http://localhost:8080/api/complaints");
+            const data = await response.json();
+
+            const complaints = Array.isArray(data) ? data : data.complaints;
+
+            if (!response.ok || !Array.isArray(complaints)) {
+                throw new Error("Invalid response");
+            }
+
+            if (complaints.length === 0) {
+                table.innerHTML = "<tr><td colspan='6'>No complaints found.</td></tr>";
+                return;
+            }
+
+            table.innerHTML = "";
+
+            complaints.forEach(function(c) {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${c.complaint_id}</td>
+                    <td>${c.student_id}</td>
+                    <td></td>
+                    <td>${c.status}</td>
+                    <td>${c.created_at}</td>
+                    <td>-</td>
+                `;
+
+                row.children[2].textContent = c.description;
+                table.appendChild(row);
+            });
+        } catch (error) {
+            table.innerHTML = "<tr><td colspan='6'>Could not load complaints. Check the backend API.</td></tr>";
+        }
+    });
+</script>
+
 
 </body>
 </html>
