@@ -1,83 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Hostel Management</title>
-
     <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
-
 <div class="admin-layout">
 
     <aside class="sidebar">
-
         <div class="sidebar-title">
             <h2>Hostel Admin</h2>
         </div>
 
         <nav>
-
-            <button class="nav-btn active">
-                Dashboard
-            </button>
-
-            <button class="nav-btn">
-                Students
-            </button>
-
-            <button class="nav-btn">
-                Rooms
-            </button>
-
-            
-        <button class="nav-btn">
-             Allocations
-        </button>
-
-        <button class="nav-btn" id="complaintsBtn">
-                Complaints
-        </button>
-
-<button class="nav-btn logout-btn">
-    Logout
-</button>
-
-
+            <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+            <button class="nav-btn" data-page="students">Students</button>
+            <button class="nav-btn" data-page="rooms">Rooms</button>
+            <button class="nav-btn" data-page="allocations">Allocations</button>
+            <button class="nav-btn" data-page="complaints">Complaints</button>
+            <button class="nav-btn logout-btn" id="logoutBtn">Logout</button>
         </nav>
-
     </aside>
 
     <main class="admin-main">
 
-
         <header class="topbar">
-
             <div>
                 <h1 id="pageTitle">Dashboard</h1>
             </div>
-
-            <div class="admin-user">
-                Admin
-            </div>
-
+            <div class="admin-user">Admin</div>
         </header>
 
-
+        <!-- Dashboard -->
         <section id="dashboard" class="content-section">
-
             <h2>Dashboard</h2>
 
             <div class="dashboard-cards">
-
                 <div class="dashboard-card">
                     <h3>Students</h3>
                     <p id="studentCount">0</p>
@@ -97,91 +58,172 @@
                     <h3>Unresolved Complaints</h3>
                     <p id="unresolvedCount">0</p>
                 </div>
+            </div>
+        </section>
 
+        <!-- Students placeholder -->
+        <section id="students" class="content-section" style="display:none;">
+            <h2>Students</h2>
+            <p>Students management will be added here.</p>
+        </section>
+
+        <!-- Rooms placeholder -->
+        <section id="rooms" class="content-section" style="display:none;">
+            <h2>Rooms</h2>
+            <p>Rooms management will be added here.</p>
+        </section>
+
+        <!-- Allocations placeholder -->
+        <section id="allocations" class="content-section" style="display:none;">
+            <h2>Allocations</h2>
+            <p>Allocations management will be added here.</p>
+        </section>
+
+        <!-- Complaints -->
+        <section id="complaints" class="content-section" style="display:none;">
+            <h2>Student Complaints</h2>
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; background:white;">
+                    <thead>
+                        <tr>
+                            <th style="padding:12px; border:1px solid #ddd;">Complaint ID</th>
+                            <th style="padding:12px; border:1px solid #ddd;">Student ID</th>
+                            <th style="padding:12px; border:1px solid #ddd;">Description</th>
+                            <th style="padding:12px; border:1px solid #ddd;">Status</th>
+                            <th style="padding:12px; border:1px solid #ddd;">Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="complaintsTable">
+                        <tr>
+                            <td colspan="5" style="padding:12px;">Click Complaints to load records.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
+            <p id="complaintsMessage"></p>
         </section>
-        
-<section id="complaints" class="content-section" style="display: none;">
-
-    <h2>Manage Complaints</h2>
-
-    <p id="complaintMessage"></p>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Complaint ID</th>
-                <th>Student ID</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody id="complaintTableBody">
-            <tr>
-                <td colspan="6">Click Complaints to load records.</td>
-            </tr>
-        </tbody>
-    </table>
-
-</section>
-
 
     </main>
-
 </div>
 
-
 <script>
-    document.getElementById("complaintsBtn").addEventListener("click", async function() {
-        document.getElementById("dashboard").style.display = "none";
-        document.getElementById("complaints").style.display = "block";
-        document.getElementById("pageTitle").textContent = "Complaints";
+const API_BASE = "http://localhost:8080";
 
-        const table = document.getElementById("complaintTableBody");
-        table.innerHTML = "<tr><td colspan='6'>Loading complaints...</td></tr>";
+// Load dashboard data
+async function loadDashboard() {
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/dashboard`);
+        const data = await response.json();
 
-        try {
-            const response = await fetch("http://localhost:8080/api/complaints");
-            const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Failed to load dashboard");
+        }
 
-            const complaints = Array.isArray(data) ? data : data.complaints;
+        document.getElementById("studentCount").textContent = data.students;
+        document.getElementById("roomCount").textContent = data.totalRooms;
+        document.getElementById("occupiedRoomCount").textContent = data.occupiedRooms;
+        document.getElementById("unresolvedCount").textContent = data.unresolvedComplaints;
 
-            if (!response.ok || !Array.isArray(complaints)) {
-                throw new Error("Invalid response");
-            }
+    } catch (error) {
+        console.error("Dashboard error:", error);
+    }
+}
 
-            if (complaints.length === 0) {
-                table.innerHTML = "<tr><td colspan='6'>No complaints found.</td></tr>";
-                return;
-            }
+// Load all complaints from the backend
+async function loadComplaints() {
+    const table = document.getElementById("complaintsTable");
+    const message = document.getElementById("complaintsMessage");
 
-            table.innerHTML = "";
+    table.innerHTML =
+        "<tr><td colspan='5' style='padding:12px;'>Loading complaints...</td></tr>";
+    message.textContent = "";
 
-            complaints.forEach(function(c) {
-                const row = document.createElement("tr");
+    try {
+        const response = await fetch(`${API_BASE}/api/complaints`);
+        const data = await response.json();
 
-                row.innerHTML = `
-                    <td>${c.complaint_id}</td>
-                    <td>${c.student_id}</td>
-                    <td></td>
-                    <td>${c.status}</td>
-                    <td>${c.created_at}</td>
-                    <td>-</td>
-                `;
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Failed to load complaints");
+        }
 
-                row.children[2].textContent = c.description;
-                table.appendChild(row);
+        table.innerHTML = "";
+
+        if (!data.complaints || data.complaints.length === 0) {
+            table.innerHTML =
+                "<tr><td colspan='5' style='padding:12px;'>No complaints found.</td></tr>";
+            return;
+        }
+
+        data.complaints.forEach(complaint => {
+            const row = document.createElement("tr");
+
+            const values = [
+                complaint.complaint_id,
+                complaint.student_id,
+                complaint.description,
+                complaint.status,
+                complaint.created_at
+            ];
+
+            values.forEach(value => {
+                const cell = document.createElement("td");
+                cell.style.padding = "12px";
+                cell.style.border = "1px solid #ddd";
+                cell.textContent = value ?? "";
+                row.appendChild(cell);
             });
-        } catch (error) {
-            table.innerHTML = "<tr><td colspan='6'>Could not load complaints. Check the backend API.</td></tr>";
+
+            table.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error("Complaints error:", error);
+        table.innerHTML =
+            "<tr><td colspan='5' style='padding:12px;'>Could not load complaints.</td></tr>";
+        message.textContent = error.message;
+    }
+}
+
+// Sidebar navigation
+document.querySelectorAll(".nav-btn[data-page]").forEach(button => {
+    button.addEventListener("click", () => {
+        const page = button.dataset.page;
+
+        document.querySelectorAll(".content-section").forEach(section => {
+            section.style.display = "none";
+        });
+
+        document.getElementById(page).style.display = "block";
+        document.getElementById("pageTitle").textContent =
+            button.textContent.trim();
+
+        document.querySelectorAll(".nav-btn").forEach(navButton => {
+            navButton.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        if (page === "dashboard") {
+            loadDashboard();
+        }
+
+        if (page === "complaints") {
+            loadComplaints();
         }
     });
-</script>
+});
 
+// Logout
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    window.location.href = "login.html";
+});
+
+// Initial dashboard load
+loadDashboard();
+</script>
 
 </body>
 </html>
