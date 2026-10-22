@@ -68,10 +68,34 @@
         </section>
 
         <!-- Rooms placeholder -->
-        <section id="rooms" class="content-section" style="display:none;">
-            <h2>Rooms</h2>
-            <p>Rooms management will be added here.</p>
-        </section>
+        
+<section id="rooms" class="content-section" style="display:none;">
+    <h2>Rooms Management</h2>
+
+    <p id="roomsMessage"></p>
+
+    <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; background:white;">
+            <thead>
+                <tr>
+                    <th>Room ID</th>
+                    <th>Room Number</th>
+                    <th>Block</th>
+                    <th>Floor</th>
+                    <th>Capacity</th>
+                    <th>Occupied Beds</th>
+<th>Available Beds</th>
+                </tr>
+            </thead>
+            <tbody id="roomsTable">
+                <tr>
+                    <td colspan="5">Click Rooms to load records.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
 
         <!-- Allocations placeholder -->
         <section id="allocations" class="content-section" style="display:none;">
@@ -92,6 +116,7 @@
                             <th style="padding:12px; border:1px solid #ddd;">Description</th>
                             <th style="padding:12px; border:1px solid #ddd;">Status</th>
                             <th style="padding:12px; border:1px solid #ddd;">Date</th>
+                            <th style="padding:12px; border:1px solid #ddd;">Action</th>
                         </tr>
                     </thead>
 
@@ -133,12 +158,13 @@ async function loadDashboard() {
 }
 
 // Load all complaints from the backend
+
 async function loadComplaints() {
     const table = document.getElementById("complaintsTable");
     const message = document.getElementById("complaintsMessage");
 
     table.innerHTML =
-        "<tr><td colspan='5' style='padding:12px;'>Loading complaints...</td></tr>";
+        "<tr><td colspan='6' style='padding:12px;'>Loading complaints...</td></tr>";
     message.textContent = "";
 
     try {
@@ -153,7 +179,7 @@ async function loadComplaints() {
 
         if (!data.complaints || data.complaints.length === 0) {
             table.innerHTML =
-                "<tr><td colspan='5' style='padding:12px;'>No complaints found.</td></tr>";
+                "<tr><td colspan='6' style='padding:12px;'>No complaints found.</td></tr>";
             return;
         }
 
@@ -176,16 +202,111 @@ async function loadComplaints() {
                 row.appendChild(cell);
             });
 
+            const actionCell = document.createElement("td");
+            actionCell.style.padding = "12px";
+            actionCell.style.border = "1px solid #ddd";
+
+            const statusSelect = document.createElement("select");
+
+            ["Pending", "In Progress", "Resolved"].forEach(status => {
+                const option = document.createElement("option");
+                option.value = status;
+                option.textContent = status;
+                statusSelect.appendChild(option);
+            });
+
+            statusSelect.value = complaint.status;
+
+            const updateButton = document.createElement("button");
+            updateButton.textContent = "Update";
+
+            updateButton.addEventListener("click", async () => {
+                try {
+                    updateButton.disabled = true;
+                    message.textContent = "Updating complaint...";
+
+                    const updateResponse = await fetch(
+                        `${API_BASE}/api/complaints/${complaint.complaint_id}`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                status: statusSelect.value
+                            })
+                        }
+                    );
+
+                    const result = await updateResponse.json();
+
+                    if (!updateResponse.ok || !result.success) {
+                        throw new Error(result.message || "Update failed");
+                    }
+
+                    message.textContent = "Complaint status updated successfully!";
+                    await loadComplaints();
+                    await loadDashboard();
+
+                } catch (error) {
+                    message.textContent = error.message;
+                } finally {
+                    updateButton.disabled = false;
+                }
+            });
+
+            actionCell.appendChild(statusSelect);
+            actionCell.appendChild(document.createElement("br"));
+            actionCell.appendChild(updateButton);
+            row.appendChild(actionCell);
+
             table.appendChild(row);
         });
 
     } catch (error) {
         console.error("Complaints error:", error);
         table.innerHTML =
-            "<tr><td colspan='5' style='padding:12px;'>Could not load complaints.</td></tr>";
+            "<tr><td colspan='6' style='padding:12px;'>Could not load complaints.</td></tr>";
         message.textContent = error.message;
     }
 }
+
+async function loadRooms() {
+    const table = document.getElementById("roomsTable");
+
+    try {
+        const response = await fetch(`${API_BASE}/api/rooms`);
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Failed to load rooms");
+        }
+
+        table.innerHTML = "";
+
+        result.rooms.forEach(room => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${room.room_id}</td>
+                <td>${room.room_number}</td>
+                <td>${room.block}</td>
+                <td>${room.floor}</td>
+                <td>${room.capacity}</td>
+                <td>${room.occupied}</td>
+                <td>${room.available}</td>
+            `;
+
+            table.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error("Rooms error:", error);
+        table.innerHTML =
+            `<tr><td colspan="7">Could not load rooms: ${error.message}</td></tr>`;
+    }
+}
+
 
 // Sidebar navigation
 document.querySelectorAll(".nav-btn[data-page]").forEach(button => {
@@ -209,6 +330,9 @@ document.querySelectorAll(".nav-btn[data-page]").forEach(button => {
         if (page === "dashboard") {
             loadDashboard();
         }
+        if (page === "rooms") {
+    loadRooms();
+}
 
         if (page === "complaints") {
             loadComplaints();
