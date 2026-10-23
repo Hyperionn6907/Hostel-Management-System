@@ -61,11 +61,33 @@
             </div>
         </section>
 
-        <!-- Students placeholder -->
-        <section id="students" class="content-section" style="display:none;">
-            <h2>Students</h2>
-            <p>Students management will be added here.</p>
-        </section>
+        
+<!-- Students Management -->
+<section id="students" class="content-section" style="display:none;">
+    <h2>Students Management</h2>
+
+    <p id="studentsMessage">Click Students to load records.</p>
+
+    <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; background:white;">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Phone</th>
+                </tr>
+            </thead>
+            <tbody id="studentsTable">
+                <tr>
+                    <td colspan="5">Loading students...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
 
         <!-- Rooms placeholder -->
         
@@ -97,11 +119,50 @@
 </section>
 
 
-        <!-- Allocations placeholder -->
-        <section id="allocations" class="content-section" style="display:none;">
-            <h2>Allocations</h2>
-            <p>Allocations management will be added here.</p>
-        </section>
+       
+<!-- Allocations Management -->
+<section id="allocations" class="content-section" style="display:none;">
+    <h2>Allocations Management</h2>
+    
+<h3>Allocate Room</h3>
+
+<form id="allocationForm">
+    <label>Student ID:</label>
+    <input type="number" id="allocationStudentId" required>
+
+    <label>Room ID:</label>
+    <input type="number" id="allocationRoomId" required>
+
+    <label>Allocation Date:</label>
+    <input type="date" id="allocationDate" required>
+
+    <button type="submit">Allocate Room</button>
+</form>
+
+
+    <p id="allocationsMessage"></p>
+
+    <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; background:white;">
+            <thead>
+                <tr>
+                    <th>Allocation ID</th>
+                    <th>Student ID</th>
+                    <th>Room ID</th>
+                    <th>Allocation Date</th>
+                    <th>End Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="allocationsTable">
+                <tr>
+                    <td colspan="6">Click Allocations to load records.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
 
         <!-- Complaints -->
         <section id="complaints" class="content-section" style="display:none;">
@@ -308,6 +369,206 @@ async function loadRooms() {
 }
 
 
+async function loadAllocations() {
+    const table = document.getElementById("allocationsTable");
+    const message = document.getElementById("allocationsMessage");
+
+    try {
+        message.textContent = "Loading allocations...";
+
+        const response = await fetch(`${API_BASE}/api/allocations`);
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Failed to load allocations");
+        }
+
+        table.innerHTML = "";
+
+        if (result.allocations.length === 0) {
+            table.innerHTML =
+                '<tr><td colspan="6">No allocations found.</td></tr>';
+        } else {
+            result.allocations.forEach(allocation => {
+                const row = document.createElement("tr");
+
+                [
+                    allocation.allocation_id,
+                    allocation.student_id,
+                    allocation.room_id,
+                    allocation.allocation_date,
+                    allocation.end_date || "Active"
+                ].forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value ?? "";
+                    cell.style.padding = "12px";
+                    cell.style.border = "1px solid #ddd";
+                    row.appendChild(cell);
+                });
+
+                const actionCell = document.createElement("td");
+                actionCell.style.padding = "12px";
+                actionCell.style.border = "1px solid #ddd";
+
+                if (!allocation.end_date) {
+                    const button = document.createElement("button");
+                    button.textContent = "Deallocate";
+
+                    button.addEventListener("click", () => {
+                        deallocateRoom(allocation.allocation_id);
+                    });
+
+                    actionCell.appendChild(button);
+                } else {
+                    actionCell.textContent = "Completed";
+                }
+
+                row.appendChild(actionCell);
+                table.appendChild(row);
+            });
+        }
+
+        message.textContent = "";
+    } catch (error) {
+        console.error("Allocations error:", error);
+        table.innerHTML =
+            '<tr><td colspan="6">Could not load allocations.</td></tr>';
+        message.textContent = error.message;
+    }
+}
+
+
+
+document.getElementById("allocationForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const studentId = document.getElementById("allocationStudentId").value;
+    const roomId = document.getElementById("allocationRoomId").value;
+    const allocationDate = document.getElementById("allocationDate").value;
+    const message = document.getElementById("allocationsMessage");
+
+    message.textContent = "Allocating room...";
+
+    try {
+        const response = await fetch(`${API_BASE}/api/allocations`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                student_id: studentId,
+                room_id: roomId,
+                allocation_date: allocationDate
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Allocation failed");
+        }
+
+        message.textContent = "Room allocated successfully!";
+        document.getElementById("allocationForm").reset();
+
+        await loadAllocations();
+        await loadRooms();
+        await loadDashboard();
+    } catch (error) {
+        message.textContent = error.message;
+    }
+});
+
+
+async function deallocateRoom(allocationId) {
+    const message = document.getElementById("allocationsMessage");
+
+    if (!confirm("Are you sure you want to deallocate this room?")) {
+        return;
+    }
+
+    try {
+        message.textContent = "Deallocating room...";
+
+        const response = await fetch(
+            `${API_BASE}/api/allocations/${allocationId}/deallocate`,
+            {
+                method: "PUT"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Deallocation failed");
+        }
+
+        message.textContent = "Room deallocated successfully!";
+
+        await loadAllocations();
+        await loadRooms();
+        await loadDashboard();
+
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+
+async function loadStudents() {
+    const table = document.getElementById("studentsTable");
+    const message = document.getElementById("studentsMessage");
+
+    try {
+        message.textContent = "Loading students...";
+
+        const response = await fetch(`${API_BASE}/api/admin/students`);
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Failed to load students");
+        }
+
+        table.innerHTML = "";
+
+        if (result.students.length === 0) {
+            table.innerHTML =
+                '<tr><td colspan="5">No students found.</td></tr>';
+        } else {
+            result.students.forEach(student => {
+                const row = document.createElement("tr");
+
+                [
+                    student.student_id,
+                    student.name,
+                    student.email,
+                    student.department,
+                    student.phone
+                ].forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value ?? "";
+                    cell.style.padding = "12px";
+                    cell.style.border = "1px solid #ddd";
+                    row.appendChild(cell);
+                });
+
+                table.appendChild(row);
+            });
+        }
+
+        message.textContent = "Students loaded successfully.";
+
+    } catch (error) {
+        console.error("Students error:", error);
+        table.innerHTML =
+            '<tr><td colspan="5">Could not load students.</td></tr>';
+        message.textContent = error.message;
+    }
+}
+
+
+
+
 // Sidebar navigation
 document.querySelectorAll(".nav-btn[data-page]").forEach(button => {
     button.addEventListener("click", () => {
@@ -330,6 +591,9 @@ document.querySelectorAll(".nav-btn[data-page]").forEach(button => {
         if (page === "dashboard") {
             loadDashboard();
         }
+        if (page === "students") {
+    loadStudents();
+}
         if (page === "rooms") {
     loadRooms();
 }
@@ -337,6 +601,9 @@ document.querySelectorAll(".nav-btn[data-page]").forEach(button => {
         if (page === "complaints") {
             loadComplaints();
         }
+        if (page === "allocations") {
+    loadAllocations();
+}
     });
 });
 
