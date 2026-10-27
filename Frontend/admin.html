@@ -49,6 +49,18 @@
                 <span class="nav-label">Students</span>
             </a>
 
+            <a href="add-student.html" class="nav-item" title="Add New Student" id="navAddStudent">
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                </span>
+                <span class="nav-label">Add New Student</span>
+            </a>
+
             <a class="nav-item nav-btn" data-page="rooms" title="Rooms">
                 <span class="nav-icon">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -82,18 +94,7 @@
                 <span class="nav-label">Complaints</span>
             </a>
 
-            <div class="nav-section-label" style="margin-top: 10px;">Navigation</div>
-
-            <a href="student.html" class="nav-item" title="Switch to Student Portal">
-                <span class="nav-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                    </svg>
-                </span>
-                <span class="nav-label">Student View</span>
-            </a>
+            <div class="nav-section-label" style="margin-top: 10px;">Account</div>
 
             <a class="nav-item nav-btn logout-btn" id="logoutBtn" title="Logout" style="color: #DC2626;">
                 <span class="nav-icon">
@@ -216,7 +217,16 @@
                     </div>
 
                     <div class="welcome-actions">
-                        <button class="welcome-btn welcome-btn-solid" onclick="document.querySelector('[data-page=allocations]').click();">
+                        <a href="add-student.html" class="welcome-btn welcome-btn-solid" title="Register a new student account">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <line x1="19" y1="8" x2="19" y2="14"></line>
+                                <line x1="22" y1="11" x2="16" y2="11"></line>
+                            </svg>
+                            <span>Add New Student</span>
+                        </a>
+                        <button class="welcome-btn" onclick="document.querySelector('[data-page=allocations]').click();">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -386,11 +396,20 @@
                  STUDENTS MANAGEMENT SECTION
                  ============================================================ -->
             <section id="students" class="content-section" style="display: none;">
-                <div class="section-head-bar">
+                <div class="section-head-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                     <div>
                         <h2 class="section-head-title">Students Management</h2>
                         <p class="section-head-sub">View and verify all registered hostel residents.</p>
                     </div>
+                    <a href="add-student.html" class="welcome-btn welcome-btn-solid" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <line x1="19" y1="8" x2="19" y2="14"></line>
+                            <line x1="22" y1="11" x2="16" y2="11"></line>
+                        </svg>
+                        <span>+ Add New Student</span>
+                    </a>
                 </div>
 
                 <div class="data-table-card">
@@ -1064,8 +1083,18 @@
             return div.innerHTML;
         }
 
-        // Initial Load
-        loadDashboard();
+        // Initial Load (support URL hash e.g. admin.html#students)
+        const hash = window.location.hash.replace("#", "");
+        if (hash) {
+            const targetBtn = document.querySelector(`.nav-btn[data-page="${hash}"]`);
+            if (targetBtn) {
+                targetBtn.click();
+            } else {
+                loadDashboard();
+            }
+        } else {
+            loadDashboard();
+        }
     </script>
 
 </body>

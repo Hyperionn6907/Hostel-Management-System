@@ -92,7 +92,7 @@
                                 type="text"
                                 id="userId"
                                 class="login-input"
-                                placeholder="Enter your ID (e.g. 101 or admin)"
+                                placeholder="Enter your Student ID (e.g. 101), Email, or admin"
                                 required
                                 autocomplete="username"
                             >
@@ -219,7 +219,8 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    sessionStorage.setItem("userId", userId);
+                    const actualUserId = (data.role === "student" && data.student_id) ? String(data.student_id) : userId;
+                    sessionStorage.setItem("userId", actualUserId);
                     const userRole = data.role || (userId.toLowerCase() === "admin" ? "admin" : "student");
                     sessionStorage.setItem("role", userRole);
 
