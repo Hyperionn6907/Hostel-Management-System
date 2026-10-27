@@ -6,6 +6,55 @@ using namespace std;
 class Student
 {
 public:
+    int student_id;
+    string name;
+    string email;
+    string department;
+    string phone;
+    string password;
+
+    Student() : student_id(0), password("student123") {}
+
+    Student(int id, string n, string e, string d, string p, string pwd = "student123")
+        : student_id(id), name(n), email(e), department(d), phone(p), password(pwd) {}
+
+    // Method to create and insert a new student record into MySQL
+    static bool createStudent(MYSQL* conn, int id, const string& name, const string& email,
+                              const string& department, const string& phone,
+                              const string& password, string& errMsg)
+    {
+        if (conn == NULL) {
+            errMsg = "Database connection not initialized";
+            return false;
+        }
+
+        char escName[205];
+        char escEmail[205];
+        char escDept[105];
+        char escPhone[35];
+        char escPwd[515];
+
+        mysql_real_escape_string(conn, escName, name.c_str(), min((int)name.length(), 100));
+        mysql_real_escape_string(conn, escEmail, email.c_str(), min((int)email.length(), 100));
+        mysql_real_escape_string(conn, escDept, department.c_str(), min((int)department.length(), 50));
+        mysql_real_escape_string(conn, escPhone, phone.c_str(), min((int)phone.length(), 15));
+        mysql_real_escape_string(conn, escPwd, password.c_str(), min((int)password.length(), 255));
+
+        string query = "INSERT INTO students (student_id, name, email, department, phone, password) VALUES (" +
+                       to_string(id) + ", '" +
+                       string(escName) + "', '" +
+                       string(escEmail) + "', '" +
+                       string(escDept) + "', '" +
+                       string(escPhone) + "', '" +
+                       string(escPwd) + "')";
+
+        if (mysql_query(conn, query.c_str()) != 0) {
+            errMsg = mysql_error(conn);
+            return false;
+        }
+        return true;
+    }
+
     void addStudent(MYSQL* conn)
     {
         int id;
@@ -21,12 +70,12 @@ public:
         getline(cin, department);
         cout << "Enter phone: ";
         getline(cin, phone);
-        string query = "INSERT INTO students VALUES (" +
+        string query = "INSERT INTO students (student_id, name, email, department, phone, password) VALUES (" +
                        to_string(id) + ", '" +
                        name + "', '" +
                        email + "', '" +
                        department + "', '" +
-                       phone + "')";
+                       phone + "', 'student123')";
         if (mysql_query(conn, query.c_str()) == 0)
             cout << "Student added successfully\n";
         else

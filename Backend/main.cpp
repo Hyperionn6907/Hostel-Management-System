@@ -1,6 +1,12 @@
+#ifdef _WIN32
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0A00
+#endif
+
 #include <iostream>
 #include <mysql.h>
 #include <cstdlib>
+
 #include "httplib.h"
 #include "json.hpp"
 
@@ -106,32 +112,49 @@ if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
                 }
             }
 
-            // 2. Check if credentials match a student (only if userId contains digits)
+            // 2. Check if credentials match a student (by numeric student_id or email)
             bool isNumeric = !userId.empty() && userId.find_first_not_of("0123456789") == string::npos;
+            string studentQuery;
             if (isNumeric) {
-                string studentQuery =
-                    "SELECT student_id FROM students WHERE student_id = "
+                studentQuery =
+                    "SELECT student_id, name FROM students WHERE student_id = "
                     + string(escapedUser)
                     + " AND password = '"
                     + string(escapedPassword)
                     + "'";
+            } else {
+                studentQuery =
+                    "SELECT student_id, name FROM students WHERE email = '"
+                    + string(escapedUser)
+                    + "' AND password = '"
+                    + string(escapedPassword)
+                    + "'";
+            }
 
-                if (mysql_query(conn, studentQuery.c_str()) == 0) {
-                    MYSQL_RES* studentResult = mysql_store_result(conn);
-                    if (studentResult != NULL) {
-                        my_ulonglong studentRows = mysql_num_rows(studentResult);
+            if (mysql_query(conn, studentQuery.c_str()) == 0) {
+                MYSQL_RES* studentResult = mysql_store_result(conn);
+                if (studentResult != NULL) {
+                    my_ulonglong studentRows = mysql_num_rows(studentResult);
+                    if (studentRows > 0) {
+                        MYSQL_ROW row = mysql_fetch_row(studentResult);
+                        string sid = (row && row[0]) ? row[0] : userId;
+                        string sname = (row && row[1]) ? row[1] : "";
                         mysql_free_result(studentResult);
-                        if (studentRows > 0) {
-                            cout << "Student login successful for: " << userId << endl;
-                            delete[] escapedPassword;
-                            delete[] escapedUser;
-                            res.set_content(
-                                R"({"success":true,"role":"student"})",
-                                "application/json"
-                            );
-                            return;
-                        }
+
+                        cout << "Student login successful for: " << userId << " (ID: " << sid << ")" << endl;
+                        delete[] escapedPassword;
+                        delete[] escapedUser;
+
+                        json resp;
+                        resp["success"] = true;
+                        resp["role"] = "student";
+                        resp["student_id"] = sid;
+                        resp["name"] = sname;
+
+                        res.set_content(resp.dump(), "application/json");
+                        return;
                     }
+                    mysql_free_result(studentResult);
                 }
             }
 
@@ -997,6 +1020,209 @@ server.Get("/api/admin/students",
 
         res.set_content(response.dump(), "application/json");
     });
+
+    // Endpoint: Get next suggested Student ID
+    server.Get("/api/students/next-id",
+        [&](const httplib::Request& req, httplib::Response& res) {
+
+        string query = "SELECT COALESCE(MAX(student_id), 100) + 1 AS next_id FROM students";
+
+        if (mysql_query(conn, query.c_str()) != 0) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Database query failed"})",
+                "application/json"
+            );
+            return;
+        }
+
+        MYSQL_RES* result = mysql_store_result(conn);
+        if (result == NULL) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Could not read database result"})",
+                "application/json"
+            );
+            return;
+        }
+
+        MYSQL_ROW row = mysql_fetch_row(result);
+        int nextId = 101;
+        if (row != NULL && row[0] != NULL) {
+            try {
+                nextId = stoi(row[0]);
+            } catch (...) {
+                nextId = 101;
+            }
+        }
+        mysql_free_result(result);
+
+        json resp;
+        resp["success"] = true;
+        resp["next_id"] = nextId;
+        res.set_content(resp.dump(), "application/json");
+    });
+
+    // Endpoint: Add / Register a new Student account
+    auto handleCreateStudent = [&](const httplib::Request& req, httplib::Response& res) {
+        try {
+            json data = json::parse(req.body);
+
+            int studentId = 0;
+            if (data.contains("student_id")) {
+                if (data["student_id"].is_number()) {
+                    studentId = data["student_id"].get<int>();
+                } else if (data["student_id"].is_string()) {
+                    string sidStr = data["student_id"].get<string>();
+                    if (!sidStr.empty()) {
+                        try {
+                            studentId = stoi(sidStr);
+                        } catch (...) {
+                            studentId = 0;
+                        }
+                    }
+                }
+            }
+
+            string name = data.value("name", "");
+            string email = data.value("email", "");
+            string department = data.value("department", "");
+            string phone = data.value("phone", "");
+            string password = data.value("password", "student123");
+            if (password.empty()) {
+                password = "student123";
+            }
+
+            // Trim whitespace
+            auto trim = [](string& s) {
+                while (!s.empty() && isspace(s.front())) s.erase(s.begin());
+                while (!s.empty() && isspace(s.back())) s.pop_back();
+            };
+            trim(name);
+            trim(email);
+            trim(department);
+            trim(phone);
+            trim(password);
+
+            if (name.empty()) {
+                res.status = 400;
+                res.set_content(
+                    R"({"success":false,"message":"Student full name is required."})",
+                    "application/json"
+                );
+                return;
+            }
+
+            if (email.empty() || email.find('@') == string::npos) {
+                res.status = 400;
+                res.set_content(
+                    R"({"success":false,"message":"A valid email address is required."})",
+                    "application/json"
+                );
+                return;
+            }
+
+            // Auto-assign next student ID if not provided
+            if (studentId <= 0) {
+                string nextIdQuery = "SELECT COALESCE(MAX(student_id), 100) + 1 FROM students";
+                if (mysql_query(conn, nextIdQuery.c_str()) == 0) {
+                    MYSQL_RES* nextRes = mysql_store_result(conn);
+                    if (nextRes != NULL) {
+                        MYSQL_ROW row = mysql_fetch_row(nextRes);
+                        if (row != NULL && row[0] != NULL) {
+                            try {
+                                studentId = stoi(row[0]);
+                            } catch (...) {
+                                studentId = 101;
+                            }
+                        } else {
+                            studentId = 101;
+                        }
+                        mysql_free_result(nextRes);
+                    }
+                }
+            }
+
+            // Check if student_id already exists
+            string checkIdQuery = "SELECT student_id FROM students WHERE student_id = " + to_string(studentId);
+            if (mysql_query(conn, checkIdQuery.c_str()) == 0) {
+                MYSQL_RES* resId = mysql_store_result(conn);
+                if (resId != NULL) {
+                    my_ulonglong count = mysql_num_rows(resId);
+                    mysql_free_result(resId);
+                    if (count > 0) {
+                        res.status = 409;
+                        res.set_content(
+                            R"({"success":false,"message":"Student ID already exists. Please choose a different ID."})",
+                            "application/json"
+                        );
+                        return;
+                    }
+                }
+            }
+
+            // Check if email already exists
+            char escEmailCheck[205];
+            mysql_real_escape_string(conn, escEmailCheck, email.c_str(), min((int)email.length(), 100));
+            string checkEmailQuery = "SELECT student_id FROM students WHERE email = '" + string(escEmailCheck) + "'";
+            if (mysql_query(conn, checkEmailQuery.c_str()) == 0) {
+                MYSQL_RES* resEmail = mysql_store_result(conn);
+                if (resEmail != NULL) {
+                    my_ulonglong count = mysql_num_rows(resEmail);
+                    mysql_free_result(resEmail);
+                    if (count > 0) {
+                        res.status = 409;
+                        res.set_content(
+                            R"({"success":false,"message":"A student with this email address is already registered."})",
+                            "application/json"
+                        );
+                        return;
+                    }
+                }
+            }
+
+            // Use Student class createStudent method
+            string errMsg;
+            bool ok = Student::createStudent(conn, studentId, name, email, department, phone, password, errMsg);
+
+            if (!ok) {
+                cout << "Error inserting student: " << errMsg << endl;
+                res.status = 500;
+                res.set_content(
+                    R"({"success":false,"message":"Failed to save student in database."})",
+                    "application/json"
+                );
+                return;
+            }
+
+            cout << "Successfully created new student #" << studentId << " (" << name << ")" << endl;
+
+            json resp;
+            resp["success"] = true;
+            resp["message"] = "Student account created successfully!";
+            resp["student"] = {
+                {"student_id", studentId},
+                {"name", name},
+                {"email", email},
+                {"department", department},
+                {"phone", phone}
+            };
+
+            res.status = 201;
+            res.set_content(resp.dump(), "application/json");
+
+        } catch (const exception& e) {
+            cout << "Create student exception: " << e.what() << endl;
+            res.status = 400;
+            res.set_content(
+                R"({"success":false,"message":"Invalid request data format."})",
+                "application/json"
+            );
+        }
+    };
+
+    server.Post("/api/students", handleCreateStudent);
+    server.Post("/api/admin/students", handleCreateStudent);
 
 
 
