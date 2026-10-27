@@ -133,6 +133,8 @@ This system exemplifies core Object-Oriented Programming principles:
 | **Separation of Concerns** | Routing, serialization (`nlohmann::json`), input sanitization (`mysql_real_escape_string`), and business logic are divided into dedicated classes rather than monolithic procedures. |
 | **Stateless REST Handlers** | API classes consume standard request/response abstractions, enabling clean modular expansion for new endpoints. |
 
+> 📖 **Full UML Class Diagram:** For a complete visual class breakdown and specifications, see [class_diagram.md](class_diagram.md).
+
 ---
 
 ## 🛠️ Tech Stack
@@ -222,7 +224,8 @@ Hostel-Management-System/
 │   ├── tokens.css             # Color palette, spacing, typography tokens
 │   ├── style.css              # Main application styling
 │   └── student.css            # Student-specific component styling
-├── architecture_diagram.md    # Conceptual architecture design notes
+├── architecture_diagram.md    # Multi-tier system architecture diagram
+├── class_diagram.md           # Object-Oriented UML Class Diagram
 └── README.md                  # Comprehensive project documentation
 ```
 
