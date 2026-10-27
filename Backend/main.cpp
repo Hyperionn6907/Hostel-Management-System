@@ -63,8 +63,8 @@ if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
             cout << "Login request received for: "
                  << userId << endl;
 
-            // Escape user input before putting it into SQL.
             char* escapedPassword = new char[password.length() * 2 + 1];
+            char* escapedUser = new char[userId.length() * 2 + 1];
 
             mysql_real_escape_string(
                 conn,
@@ -73,58 +73,76 @@ if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
                 password.length()
             );
 
-            string query =
-                "SELECT student_id FROM students WHERE student_id = "
-                + userId
-                + " AND password = '"
-                + escapedPassword
+            mysql_real_escape_string(
+                conn,
+                escapedUser,
+                userId.c_str(),
+                userId.length()
+            );
+
+            // 1. First, check if credentials match an administrator in the admins table
+            string adminQuery =
+                "SELECT admin_id FROM admins WHERE username = '"
+                + string(escapedUser)
+                + "' AND password = '"
+                + string(escapedPassword)
                 + "'";
 
+            if (mysql_query(conn, adminQuery.c_str()) == 0) {
+                MYSQL_RES* adminResult = mysql_store_result(conn);
+                if (adminResult != NULL) {
+                    my_ulonglong adminRows = mysql_num_rows(adminResult);
+                    mysql_free_result(adminResult);
+                    if (adminRows > 0) {
+                        cout << "Admin login successful for: " << userId << endl;
+                        delete[] escapedPassword;
+                        delete[] escapedUser;
+                        res.set_content(
+                            R"({"success":true,"role":"admin"})",
+                            "application/json"
+                        );
+                        return;
+                    }
+                }
+            }
+
+            // 2. Check if credentials match a student (only if userId contains digits)
+            bool isNumeric = !userId.empty() && userId.find_first_not_of("0123456789") == string::npos;
+            if (isNumeric) {
+                string studentQuery =
+                    "SELECT student_id FROM students WHERE student_id = "
+                    + string(escapedUser)
+                    + " AND password = '"
+                    + string(escapedPassword)
+                    + "'";
+
+                if (mysql_query(conn, studentQuery.c_str()) == 0) {
+                    MYSQL_RES* studentResult = mysql_store_result(conn);
+                    if (studentResult != NULL) {
+                        my_ulonglong studentRows = mysql_num_rows(studentResult);
+                        mysql_free_result(studentResult);
+                        if (studentRows > 0) {
+                            cout << "Student login successful for: " << userId << endl;
+                            delete[] escapedPassword;
+                            delete[] escapedUser;
+                            res.set_content(
+                                R"({"success":true,"role":"student"})",
+                                "application/json"
+                            );
+                            return;
+                        }
+                    }
+                }
+            }
+
             delete[] escapedPassword;
+            delete[] escapedUser;
 
-            if (mysql_query(conn, query.c_str()) != 0) {
-                cout << "MySQL query error: "
-                     << mysql_error(conn) << endl;
-
-                res.status = 500;
-                res.set_content(
-                    R"({"success":false,"message":"Database query failed"})",
-                    "application/json"
-                );
-                return;
-            }
-
-            MYSQL_RES* result = mysql_store_result(conn);
-
-            if (result == NULL) {
-                cout << "Result error: "
-                     << mysql_error(conn) << endl;
-
-                res.status = 500;
-                res.set_content(
-                    R"({"success":false,"message":"Could not read database result"})",
-                    "application/json"
-                );
-                return;
-            }
-
-            my_ulonglong rows = mysql_num_rows(result);
-
-            cout << "Matching rows: " << rows << endl;
-
-            if (rows > 0) {
-                res.set_content(
-                    R"({"success":true,"role":"student"})",
-                    "application/json"
-                );
-            } else {
-                res.set_content(
-                    R"({"success":false})",
-                    "application/json"
-                );
-            }
-
-            mysql_free_result(result);
+            cout << "Login failed for: " << userId << endl;
+            res.set_content(
+                R"({"success":false,"message":"Invalid User ID or Password"})",
+                "application/json"
+            );
 
         } catch (const exception& e) {
             cout << "Login error: " << e.what() << endl;
