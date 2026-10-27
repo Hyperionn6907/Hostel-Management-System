@@ -1,26 +1,13 @@
-body {
-font-family: Arial, sans-serif;
-background-color: #f2f4f8;
-margin: 0;
-padding: 30px;
-}
+/* ============================================================
+   HOSTELOS — Student Dashboard CSS
+   Imports core tokens and shared styles
+   ============================================================ */
 
-.login-container {
-max-width: 700px;
-margin: 60px auto;
-padding: 30px;
-background: white;
-border-radius: 10px;
-}
+@import url('tokens.css');
+@import url('style.css');
 
-input, button {
-display: block;
-width: 100%;
-padding: 10px;
-margin: 10px 0;
-box-sizing: border-box;
-}
-
-button {
-cursor: pointer;
+/* Custom student page overrides if needed */
+.student-portal-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
 }

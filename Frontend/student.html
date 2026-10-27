@@ -1,282 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-     <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard</title>
-
-    <!-- Paste the complete CSS here -->
-    <style>
-
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        margin: 0;
-        min-height: 100vh;
-        width: 100%;
-        font-family: Arial, sans-serif;
-        background: #f1f5fb;
-        color: #17315b;
-    }
-
-    h1 {
-        background: #17315b;
-        color: white;
-        padding: 25px 35px;
-        margin: 0;
-    }
-
-    body > h2,
-    body > p,
-    body > hr,
-    body > form,
-    body > textarea,
-    body > button,
-    body > #complaintHistory {
-        margin-left: 30px;
-        margin-right: 30px;
-    }
-
-    #studentName {
-        font-size: 28px;
-        color: #1457d9;
-        margin-top: 30px;
-    }
-
-    #studentId,
-    #email,
-    #department,
-    #phone {
-        display: inline-block;
-        width: calc(25% - 40px);
-        min-width: 180px;
-        padding: 20px;
-        margin: 10px;
-        background: white;
-        border-radius: 12px;
-        border: 1px solid #dbe6f5;
-    }
-
-    hr {
-        margin-top: 35px;
-        margin-bottom: 30px;
-        border: 0;
-        border-top: 1px solid #ccd9eb;
-    }
-
-    textarea {
-        display: block;
-        width: calc(100% - 60px);
-        min-height: 130px;
-        padding: 15px;
-        font: inherit;
-        border: 1px solid #c7d7ef;
-        border-radius: 10px;
-        resize: vertical;
-    }
-
-    button {
-        background: #1760e8;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 14px 24px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background: #1049b5;
-    }
-
-    #complaintHistory {
-        padding: 24px;
-        background: white;
-        border-radius: 12px;
-        border: 1px solid #dbe6f5;
-        min-height: 100px;
-    }
-
-    #message,
-    #complaintMessage {
-        color: #15803d;
-        margin: 15px 30px;
-    }
-
-    @media (max-width: 700px) {
-        body > h2,
-        body > p,
-        body > hr,
-        body > form,
-        body > textarea,
-        body > button,
-        body > #complaintHistory {
-            margin-left: 16px;
-            margin-right: 16px;
-        }
-
-        #studentId,
-        #email,
-        #department,
-        #phone {
-            width: calc(100% - 40px);
-        }
-
-        textarea {
-            width: calc(100% - 32px);
-        }
-    }
-</style>
+    <title>Student Dashboard — HostelOS</title>
+    <link rel="stylesheet" href="tokens.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <h1>Student Dashboard</h1>
 
-    <h2 id="studentName">Loading student details...</h2>
-    <p id="studentId"></p>
-    <p id="email"></p>
-    <p id="department"></p>
-    <p id="phone"></p>
-    <p id="message"></p>
+<body class="app-layout">
 
-    <hr>
+    <div class="dash-main" style="margin-left: 0; width: 100%;">
 
-    <h2>Submit a Complaint</h2>
+        <!-- Top Floating Apple Glass Pill Header -->
+        <header class="dash-header" style="max-width: 1200px;">
+            <div class="dash-header-left">
+                <div class="login-brand" style="margin-right: 12px;">
+                    <div class="login-brand-icon" style="width: 32px; height: 32px; font-size: 16px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </div>
+                    <span class="login-brand-text" style="color: #0F172A; font-size: 17px;">HostelOS</span>
+                </div>
 
-    <form id="complaintForm">
-        <label for="description">Describe your complaint:</label><br>
-        <textarea id="description" maxlength="500"
-            rows="5" required></textarea><br><br>
+                <div class="breadcrumbs">
+                    <span class="breadcrumb-link">Student</span>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-current">Dashboard</span>
+                </div>
+            </div>
 
-        <button type="submit">Submit Complaint</button>
-    </form>
-    <hr>
+            <div class="dash-header-right">
+                <button class="notif-btn" title="System Alerts">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notif-dot"></span>
+                </button>
 
-<h2>My Complaint History</h2>
+                <div class="profile-btn" id="studentProfileBtn">
+                    <div class="profile-avatar" id="studentAvatarSmall">ST</div>
+                    <span class="profile-name" id="studentHeaderName">Student</span>
+                </div>
 
-<div id="complaintHistory">
-    Loading complaints...
-</div>
+                <button class="welcome-btn" id="studentLogoutBtn" style="padding: 7px 14px; font-size: 12px; color: #DC2626; border-color: rgba(220,38,38,0.2); background: rgba(220,38,38,0.05);" title="Sign out">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </header>
 
-    <p id="complaintMessage"></p>
+        <div class="dash-content" style="max-width: 1200px;">
+
+            <!-- Hero Welcome Banner -->
+            <div class="welcome-banner">
+                <div class="welcome-text">
+                    <span class="welcome-role-badge">Student Dashboard</span>
+                    <h2 id="welcomeBannerHeading">Welcome to HostelOS!</h2>
+                    <p>Track your registered room status, report maintenance issues, and view real-time complaint progress.</p>
+                </div>
+
+                <div class="welcome-actions">
+                    <button class="welcome-btn welcome-btn-solid" onclick="document.getElementById('description').focus();">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>New Complaint</span>
+                    </button>
+                    <button class="welcome-btn" onclick="document.getElementById('complaintHistory').scrollIntoView({behavior: 'smooth'});">
+                        <span>My History</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student Profile Information Card (Matches Screenshot 2) -->
+            <div class="profile-info-card">
+                <div class="profile-avatar-large" id="studentAvatarLarge">ST</div>
+                <div class="profile-details">
+                    <h3 class="profile-name-lg" id="studentName">Loading student details...</h3>
+                    <p class="profile-email" id="email"></p>
+                    <div class="profile-meta-row">
+                        <span class="profile-meta-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            </svg>
+                            <span id="studentId">Student ID: ...</span>
+                        </span>
+
+                        <span class="profile-meta-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <span id="department">Department: ...</span>
+                        </span>
+
+                        <span class="profile-meta-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            <span id="phone">Phone: ...</span>
+                        </span>
+
+                        <span class="profile-meta-chip" style="color: #059669; background: #DCFCE7;">
+                            ● Active Resident
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Status / Error Message -->
+            <p id="message" style="margin-bottom: 20px; font-weight: 600;"></p>
+
+            <!-- Submit a Complaint Glass Composer Box -->
+            <div class="form-card">
+                <div class="form-card-title">
+                    <div class="icon-chip">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <span>Submit a Complaint / Grievance</span>
+                </div>
+
+                <!-- Quick Category Pills -->
+                <div style="font-size: 12px; font-weight: 700; color: #64748B; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Select Category Tag:
+                </div>
+                <div class="category-pill-selector">
+                    <button type="button" class="category-pill-btn" onclick="applyCategory('Plumbing issue: ')">
+                        <span>🔧</span> Plumbing
+                    </button>
+                    <button type="button" class="category-pill-btn" onclick="applyCategory('Electrical failure: ')">
+                        <span>⚡</span> Electrical
+                    </button>
+                    <button type="button" class="category-pill-btn" onclick="applyCategory('Wi-Fi / Internet problem: ')">
+                        <span>🌐</span> Wi-Fi
+                    </button>
+                    <button type="button" class="category-pill-btn" onclick="applyCategory('Carpentry / Furniture repair: ')">
+                        <span>🪑</span> Furniture
+                    </button>
+                    <button type="button" class="category-pill-btn" onclick="applyCategory('Room cleaning request: ')">
+                        <span>🧹</span> Cleanliness
+                    </button>
+                    <button type="button" class="category-pill-btn" onclick="applyCategory('General maintenance: ')">
+                        <span>📌</span> Other
+                    </button>
+                </div>
+
+                <form id="complaintForm">
+                    <div class="form-field" style="margin-bottom: 12px;">
+                        <label for="description">Describe the issue in detail:</label>
+                        <textarea
+                            id="description"
+                            maxlength="500"
+                            rows="4"
+                            placeholder="e.g. The study light in room 204 is flickering and needs replacement..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="char-counter-bar">
+                        <span id="charCount">0 / 500 characters</span>
+                        <button type="submit" id="submitComplaintBtn" class="form-submit-btn">
+                            <span>Submit Complaint</span>
+                        </button>
+                    </div>
+                </form>
+
+                <p id="complaintMessage" class="form-feedback-msg"></p>
+            </div>
+
+            <!-- Complaint History -->
+            <div class="data-table-card">
+                <div class="table-toolbar">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="icon-chip" style="width: 28px; height: 28px; border-radius: 6px; background: rgba(37,99,235,0.1); color: var(--primary); display: grid; place-items: center; font-size: 14px;">
+                            📋
+                        </div>
+                        <h3 style="font-family: var(--font-head); font-size: 17px; font-weight: 800; color: #0F172A;">
+                            My Complaint History
+                        </h3>
+                    </div>
+                    <span style="font-size: 12px; color: #64748B;">Synced with MySQL Database</span>
+                </div>
+
+                <div style="padding: 24px;">
+                    <div id="complaintHistory" class="complaint-list-wrap">
+                        <div style="text-align: center; padding: 24px; color: #64748B;">Loading complaints...</div>
+                    </div>
+                </div>
+
+                <div class="dash-notif-footer">
+                    <span>Showing verified student activity</span>
+                    <span class="db-badge">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <span>Real-time synced with MySQL database</span>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
     <script>
+        const API_BASE = "http://localhost:8080";
         const userId = sessionStorage.getItem("userId");
 
+        // Helper to get initials
+        function getInitials(name) {
+            if (!name) return "ST";
+            const parts = name.trim().split(" ");
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        // Apply quick category to description textarea
+        function applyCategory(prefix) {
+            const textarea = document.getElementById("description");
+            if (!textarea.value.startsWith(prefix)) {
+                textarea.value = prefix + textarea.value.replace(/^(Plumbing issue|Electrical failure|Wi-Fi \/ Internet problem|Carpentry \/ Furniture repair|Room cleaning request|General maintenance):\s*/i, "");
+            }
+            textarea.focus();
+            updateCharCount();
+        }
+
+        const descTextarea = document.getElementById("description");
+        const charCountEl = document.getElementById("charCount");
+        function updateCharCount() {
+            charCountEl.textContent = `${descTextarea.value.length} / 500 characters`;
+        }
+        descTextarea.addEventListener("input", updateCharCount);
+
+        // Load Student Details
         async function loadStudentDetails() {
             if (!userId) {
-                document.getElementById("message").textContent =
-                    "Please log in first.";
+                document.getElementById("studentName").textContent = "Session Expired";
+                document.getElementById("message").textContent = "Please log in first. Redirecting to login...";
+                document.getElementById("message").style.color = "#DC2626";
+                setTimeout(() => { window.location.href = "login.html"; }, 1500);
                 return;
             }
 
             try {
-                const response = await fetch(
-                    `http://localhost:8080/api/students/${userId}`
-                );
-
+                const response = await fetch(`${API_BASE}/api/students/${userId}`);
                 const data = await response.json();
 
                 if (data.success) {
-                    document.getElementById("studentName").textContent =
-                        "Welcome, " + data.name;
+                    const studentName = data.name || ("Student #" + userId);
+                    const initials = getInitials(studentName);
 
-                    document.getElementById("studentId").textContent =
-                        "Student ID: " + data.student_id;
+                    document.getElementById("welcomeBannerHeading").textContent = "Welcome, " + studentName + "!";
+                    document.getElementById("studentName").textContent = studentName;
+                    document.getElementById("studentHeaderName").textContent = studentName;
+                    document.getElementById("studentAvatarLarge").textContent = initials;
+                    document.getElementById("studentAvatarSmall").textContent = initials;
 
-                    document.getElementById("email").textContent =
-                        "Email: " + data.email;
-
-                    document.getElementById("department").textContent =
-                        "Department: " + data.department;
-
-                    document.getElementById("phone").textContent =
-                        "Phone: " + data.phone;
+                    document.getElementById("studentId").textContent = "Student ID: " + (data.student_id || userId);
+                    document.getElementById("email").textContent = data.email || "No email recorded";
+                    document.getElementById("department").textContent = "Department: " + (data.department || "General");
+                    document.getElementById("phone").textContent = "Phone: " + (data.phone || "—");
+                    document.getElementById("message").textContent = "";
                 } else {
-                    document.getElementById("message").textContent =
-                        "Student details not found.";
+                    document.getElementById("studentName").textContent = "Student #" + userId;
+                    document.getElementById("message").textContent = data.message || ("Student details not found in database for ID: " + userId);
+                    document.getElementById("message").style.color = "#DC2626";
                 }
             } catch (error) {
-                document.getElementById("message").textContent =
-                    "Could not connect to the backend.";
+                document.getElementById("studentName").textContent = "Backend Offline (Port 8080)";
+                document.getElementById("studentName").style.color = "#DC2626";
+                document.getElementById("message").innerHTML = "⚠ Could not connect to backend server at <strong>http://localhost:8080</strong>. Please verify that <code>.\\server.exe</code> is running in your terminal.";
+                document.getElementById("message").style.color = "#DC2626";
             }
         }
 
-        document.getElementById("complaintForm")
-            .addEventListener("submit", async function(event) {
-                event.preventDefault();
+        // Submit Complaint
+        document.getElementById("complaintForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
 
-                const description =
-                    document.getElementById("description").value.trim();
+            const description = document.getElementById("description").value.trim();
+            const message = document.getElementById("complaintMessage");
+            const submitBtn = document.getElementById("submitComplaintBtn");
 
-                const message =
-                    document.getElementById("complaintMessage");
+            if (!userId || !/^\d+$/.test(userId)) {
+                message.textContent = "⚠ Please log in with a valid numerical student ID.";
+                message.style.color = "#DC2626";
+                return;
+            }
 
-                if (!userId || !/^\d+$/.test(userId)) {
-                    message.textContent = "Please log in with a valid student ID.";
-                    return;
-                }
+            if (!description || description.length > 500) {
+                message.textContent = "⚠ Enter a complaint between 1 and 500 characters.";
+                message.style.color = "#DC2626";
+                return;
+            }
 
-                if (!description || description.length > 500) {
-                    message.textContent =
-                        "Enter a complaint between 1 and 500 characters.";
-                    return;
-                }
-
-                try {
-                    const response = await fetch(
-                        "http://localhost:8080/api/complaints",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                student_id: Number(userId),
-                                description: description
-                            })
-                        }
-                    );
-
-                    const data = await response.json();
-
-                   
-                    if (response.ok && data.success) {
-                        message.textContent =
-                            "Complaint submitted successfully! Status: Pending.";
-
-                        document.getElementById("complaintForm").reset();
-                        await loadComplaintHistory();
-                    } else {
-                        message.textContent =
-                            data.message || "Failed to submit complaint.";
-                    }
-
-                } catch (error) {
-                    message.textContent =
-                        "Could not connect to the backend.";
-                }
-            });
-
-        loadStudentDetails();
-                async function loadComplaintHistory() {
-            const history = document.getElementById("complaintHistory");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Submitting...";
 
             try {
-                const response = await fetch(
-                    `http://localhost:8080/api/complaints/${userId}`
-                );
+                const response = await fetch(`${API_BASE}/api/complaints`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        student_id: Number(userId),
+                        description: description
+                    })
+                });
 
                 const data = await response.json();
 
+                if (response.ok && data.success) {
+                    message.textContent = "✓ Complaint submitted successfully! Status: Pending.";
+                    message.style.color = "#16A34A";
+
+                    document.getElementById("complaintForm").reset();
+                    updateCharCount();
+                    await loadComplaintHistory();
+                } else {
+                    message.textContent = "⚠ " + (data.message || "Failed to submit complaint.");
+                    message.style.color = "#DC2626";
+                }
+
+            } catch (error) {
+                message.textContent = "⚠ Could not connect to the backend.";
+                message.style.color = "#DC2626";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Submit Complaint";
+            }
+        });
+
+        // Load Complaint History
+        async function loadComplaintHistory() {
+            const history = document.getElementById("complaintHistory");
+
+            try {
+                const response = await fetch(`${API_BASE}/api/complaints/${userId}`);
+                const data = await response.json();
+
                 if (!data.success) {
-                    history.textContent = "Failed to load complaints.";
+                    history.innerHTML = '<div style="text-align:center; padding:24px; color:#DC2626;">Failed to load complaints.</div>';
                     return;
                 }
 
-                if (data.complaints.length === 0) {
-                    history.textContent = "No complaints submitted yet.";
+                if (!data.complaints || data.complaints.length === 0) {
+                    history.innerHTML = '<div style="text-align:center; padding:32px; color:#64748B;">No complaints submitted yet. Your room record is clear!</div>';
                     return;
                 }
 
@@ -284,25 +364,51 @@
 
                 data.complaints.forEach(complaint => {
                     const item = document.createElement("div");
+                    item.className = "complaint-card-item";
 
-                    const details = document.createElement("p");
-                    details.textContent =
-                        "Complaint ID: " + complaint.complaint_id +
-                        " | Description: " + complaint.description +
-                        " | Status: " + complaint.status +
-                        " | Date: " + complaint.created_at;
+                    let statusClass = "status-pending";
+                    if (complaint.status === "In Progress") statusClass = "status-in-progress";
+                    if (complaint.status === "Resolved") statusClass = "status-resolved";
 
-                    item.appendChild(details);
+                    item.innerHTML = `
+                        <div class="complaint-card-top">
+                            <span class="complaint-id-tag">Complaint #${complaint.complaint_id}</span>
+                            <span class="status-pill ${statusClass}">${escapeHtml(complaint.status)}</span>
+                        </div>
+                        <div class="complaint-body-text">${escapeHtml(complaint.description)}</div>
+                        <div class="complaint-card-meta">
+                            <span>📅 Submitted: ${escapeHtml(complaint.created_at || "Recent")}</span>
+                            <span>⚡ Synced with MySQL</span>
+                        </div>
+                    `;
+
                     history.appendChild(item);
                 });
 
             } catch (error) {
-                history.textContent =
-                    "Could not connect to the backend.";
+                history.innerHTML = '<div style="text-align:center; padding:24px; color:#DC2626;">Could not connect to the backend.</div>';
             }
         }
 
-        loadComplaintHistory();
+        // Logout
+        document.getElementById("studentLogoutBtn").addEventListener("click", () => {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+        });
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            const div = document.createElement("div");
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial Load (sequential to ensure stable MySQL connection)
+        async function initPage() {
+            await loadStudentDetails();
+            await loadComplaintHistory();
+        }
+        initPage();
     </script>
 </body>
 </html>

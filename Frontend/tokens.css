@@ -1,0 +1,115 @@
+/* ============================================================
+   HOSTELOS — Design Tokens (Blue-Black LiquidGlass Theme)
+   ============================================================ */
+
+:root {
+  /* ---- Core Royal/Cobalt Blue Palette ---- */
+  --primary:        #2563EB;   /* Vibrant Royal Blue */
+  --primary-dark:   #1D4ED8;   /* Deep Blue for hover */
+  --primary-light:  #3B82F6;   /* Sky / Light Blue */
+  --primary-deep:   #1E3A8A;   /* Navy Blue */
+  --primary-faint:  rgba(37, 99, 235, 0.08);
+  --primary-glow:   rgba(37, 99, 235, 0.35);
+
+  /* ---- Deep Blue-Black Dark Surface Palette ---- */
+  --dark-950:       #030712;   /* Deepest Void Black */
+  --dark-900:       #0B0F19;   /* Rich Obsidian Blue-Black */
+  --dark-850:       #0F172A;   /* Slate Night */
+  --dark-800:       #111827;   /* Midnight Charcoal */
+  --dark-700:       #1F2937;   /* Elevated Dark Surface */
+  --dark-border:    rgba(255, 255, 255, 0.12);
+  --dark-glass:     rgba(15, 23, 42, 0.75);
+
+  /* ---- Soft Accent (Counterpart to Peach in Eventrix) ---- */
+  --ice-blue:       #DBEAFE;
+  --ice-blue-dark:  #BFDBFE;
+  --shadow-accent:  8px 10px 0 var(--ice-blue);
+
+  /* ---- Warm Editorial Neutrals ---- */
+  --cream:          #F7F2EA;   /* Warm off-white parchment background */
+  --cream-dark:     #EEE7DC;   /* Muted surface highlight */
+  --cream-darker:   #E5DDD0;   /* Dividing tone */
+  --white:          #FFFFFF;
+  --black:          #111111;   /* Rich typographic black */
+  --gray:           #64748B;   /* Slate gray body text */
+  --gray-dark:      #334155;   /* Darker slate */
+  --gray-light:     #94A3B8;   /* Muted placeholders */
+  --border:         #E2E8F0;   /* Clean subtle border */
+  --border-light:   #F1F5F9;
+
+  /* ---- Semantic Colors ---- */
+  --success:        #10B981;
+  --success-bg:     #D1FAE5;
+  --warning:        #F59E0B;
+  --warning-bg:     #FEF3C7;
+  --danger:         #EF4444;
+  --danger-bg:      #FEE2E2;
+  --info:           #0284C7;
+  --info-bg:        #E0F2FE;
+
+  /* ---- Typography ---- */
+  --font-head:      'Plus Jakarta Sans', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body:      'Plus Jakarta Sans', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* ---- Type Scale ---- */
+  --text-xs:        11px;
+  --text-sm:        13px;
+  --text-base:      15px;
+  --text-lg:        17px;
+  --text-xl:        20px;
+  --text-2xl:       26px;
+  --text-3xl:       34px;
+  --text-4xl:       46px;
+
+  /* ---- Spacing ---- */
+  --space-1:        4px;
+  --space-2:        8px;
+  --space-3:        12px;
+  --space-4:        16px;
+  --space-5:        20px;
+  --space-6:        24px;
+  --space-7:        28px;
+  --space-8:        32px;
+  --space-10:       40px;
+  --space-12:       48px;
+
+  /* ---- Radius ---- */
+  --radius-sm:      8px;
+  --radius-md:      12px;
+  --radius-lg:      18px;
+  --radius-xl:      24px;
+  --radius-2xl:     32px;
+  --radius-full:    9999px;
+
+  /* ---- Shadows ---- */
+  --shadow-xs:      0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-sm:      0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md:      0 6px 20px rgba(15, 23, 42, 0.08);
+  --shadow-lg:      0 16px 40px rgba(15, 23, 42, 0.11);
+  --shadow-xl:      0 28px 60px rgba(15, 23, 42, 0.14);
+  --shadow-blue:    0 10px 30px rgba(37, 99, 235, 0.28);
+
+  /* ---- Transitions ---- */
+  --ease-default:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:       0.15s;
+  --dur-base:       0.24s;
+  --dur-slow:       0.35s;
+
+  /* ---- LiquidGlass Frosted Haze Tokens ---- */
+  --glass-bg:       linear-gradient(145deg, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.35) 48%, rgba(255, 255, 255, 0.52) 100%);
+  --glass-blur:     blur(26px) saturate(185%) brightness(108%);
+  --glass-blur-heavy: blur(32px) saturate(190%);
+  --glass-border:   rgba(255, 255, 255, 0.65);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+  --glass-card-bg:  linear-gradient(165deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.84) 100%);
+
+  /* ---- Layout Metrics ---- */
+  --sidebar-width:  250px;
+  --sidebar-collapsed-width: 80px;
+  --header-height:  58px;
+  --z-nav:          100;
+  --z-popover:      200;
+  --z-modal:        300;
+  --z-toast:        400;
+}

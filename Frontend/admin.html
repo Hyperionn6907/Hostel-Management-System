@@ -3,618 +3,1070 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Hostel Management</title>
+    <title>Admin Dashboard — HostelOS</title>
+    <link rel="stylesheet" href="tokens.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-<div class="admin-layout">
+<body class="app-layout">
 
-    <aside class="sidebar">
-        <div class="sidebar-title">
-            <h2>Hostel Admin</h2>
+    <!-- Floating Curved LiquidGlass Sidebar (Matches Screenshot 2) -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo-symbol">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </div>
+            <span class="sidebar-brand-name">HostelOS</span>
         </div>
 
-        <nav>
-            <button class="nav-btn active" data-page="dashboard">Dashboard</button>
-            <button class="nav-btn" data-page="students">Students</button>
-            <button class="nav-btn" data-page="rooms">Rooms</button>
-            <button class="nav-btn" data-page="allocations">Allocations</button>
-            <button class="nav-btn" data-page="complaints">Complaints</button>
-            <button class="nav-btn logout-btn" id="logoutBtn">Logout</button>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Overview</div>
+            
+            <a class="nav-item nav-btn active" data-page="dashboard" title="Dashboard">
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                    </svg>
+                </span>
+                <span class="nav-label">Dashboard</span>
+            </a>
+
+            <a class="nav-item nav-btn" data-page="students" title="Students">
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </span>
+                <span class="nav-label">Students</span>
+            </a>
+
+            <a class="nav-item nav-btn" data-page="rooms" title="Rooms">
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 4v16"></path>
+                        <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                        <path d="M2 17h20"></path>
+                        <path d="M6 8v9"></path>
+                    </svg>
+                </span>
+                <span class="nav-label">Rooms</span>
+            </a>
+
+            <a class="nav-item nav-btn" data-page="allocations" title="Allocations">
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </span>
+                <span class="nav-label">Allocations</span>
+            </a>
+
+            <a class="nav-item nav-btn" data-page="complaints" title="Complaints">
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </span>
+                <span class="nav-label">Complaints</span>
+            </a>
+
+            <div class="nav-section-label" style="margin-top: 10px;">Navigation</div>
+
+            <a href="student.html" class="nav-item" title="Switch to Student Portal">
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                </span>
+                <span class="nav-label">Student View</span>
+            </a>
+
+            <a class="nav-item nav-btn logout-btn" id="logoutBtn" title="Logout" style="color: #DC2626;">
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </span>
+                <span class="nav-label">Logout</span>
+            </a>
         </nav>
+
+        <div class="sidebar-footer">
+            <button class="sidebar-toggle-btn" id="sidebarCollapseBtn">
+                <span class="sidebar-toggle-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </span>
+                <span class="nav-label">Collapse</span>
+            </button>
+        </div>
     </aside>
 
-    <main class="admin-main">
+    <!-- Main Content Area -->
+    <div class="dash-main">
 
-        <header class="topbar">
-            <div>
-                <h1 id="pageTitle">Dashboard</h1>
+        <!-- Top Floating Apple Glass Pill Header -->
+        <header class="dash-header">
+            <div class="dash-header-left">
+                <div class="breadcrumbs">
+                    <span class="breadcrumb-link">Admin</span>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-current" id="pageTitle">Dashboard</span>
+                </div>
             </div>
-            <div class="admin-user">Admin</div>
+
+            <div class="dash-header-right">
+                <!-- Notifications Button with Ping Dot -->
+                <button class="notif-btn" id="notifBtn" title="Notifications">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notif-dot"></span>
+                </button>
+
+                <!-- Notifications Popover -->
+                <div class="dash-popover hidden" id="notifPopover">
+                    <div style="padding: 16px 20px; border-bottom: 1px solid rgba(15,23,42,0.06); display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="font-family:var(--font-head); font-weight:800; font-size:14px; color:#0F172A;">Hostel Notifications</h4>
+                        <span style="font-size:11px; color:var(--primary); font-weight:700;">Live Sync</span>
+                    </div>
+                    <div style="padding: 10px 0; max-height: 280px; overflow-y:auto;">
+                        <div style="padding: 12px 20px; border-bottom: 1px solid rgba(15,23,42,0.04); display:flex; gap:10px;">
+                            <span style="color:#2563EB;">●</span>
+                            <div style="font-size:12.5px; color:#1E293B;">
+                                <div>MySQL database connection active on port 8080.</div>
+                                <div style="font-size:11px; color:#64748B; margin-top:2px;">Just now</div>
+                            </div>
+                        </div>
+                        <div style="padding: 12px 20px; display:flex; gap:10px;">
+                            <span style="color:#10B981;">●</span>
+                            <div style="font-size:12.5px; color:#1E293B;">
+                                <div>Room allocations synchronized with records.</div>
+                                <div style="font-size:11px; color:#64748B; margin-top:2px;">10m ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile Pill -->
+                <div style="position: relative;">
+                    <div class="profile-btn" id="profilePillBtn">
+                        <div class="profile-avatar">AD</div>
+                        <span class="profile-name">Hostel Admin</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: #64748B;">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+
+                    <!-- Profile Popover -->
+                    <div class="dash-popover hidden" id="profilePopover" style="width: 260px;">
+                        <div style="padding: 18px 20px; border-bottom: 1px solid rgba(15,23,42,0.06);">
+                            <div style="font-weight: 800; font-size: 14.5px; color: #0F172A;">Hostel Administrator</div>
+                            <div style="font-size: 12px; color: #64748B; margin-top: 2px;">admin@hostel.edu</div>
+                            <span style="display:inline-block; font-size: 10.5px; font-weight:800; color:var(--primary); background:rgba(37,99,235,0.1); padding:2px 8px; border-radius:12px; margin-top:6px;">ADMINISTRATOR</span>
+                        </div>
+                        <div style="padding: 8px;">
+                            <a href="login.html" style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:700; color:#DC2626; background:rgba(220,38,38,0.06);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                <span>Sign Out</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </header>
 
-        <!-- Dashboard -->
-        <section id="dashboard" class="content-section">
-            <h2>Dashboard</h2>
+        <div class="dash-content">
 
-            <div class="dashboard-cards">
-                <div class="dashboard-card">
-                    <h3>Students</h3>
-                    <p id="studentCount">0</p>
+            <!-- ============================================================
+                 DASHBOARD OVERVIEW SECTION (Matches Screenshot 2)
+                 ============================================================ -->
+            <section id="dashboard" class="content-section">
+
+                <!-- Welcome Hero Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <span class="welcome-role-badge">Admin Dashboard</span>
+                        <h2>Hello, Hostel Administrator!</h2>
+                        <p>Explore real-time room allocations, student records, occupancy metrics, and grievance statuses.</p>
+                    </div>
+
+                    <div class="welcome-actions">
+                        <button class="welcome-btn welcome-btn-solid" onclick="document.querySelector('[data-page=allocations]').click();">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Allocate Room</span>
+                        </button>
+                        <button class="welcome-btn" onclick="document.querySelector('[data-page=rooms]').click();">
+                            <span>Browse Rooms</span>
+                        </button>
+                        <button class="welcome-btn" onclick="document.querySelector('[data-page=complaints]').click();">
+                            <span>Complaints</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="dashboard-card">
-                    <h3>Total Rooms</h3>
-                    <p id="roomCount">0</p>
+                <!-- Profile Info Card -->
+                <div class="profile-info-card">
+                    <div class="profile-avatar-large">AD</div>
+                    <div class="profile-details">
+                        <h3 class="profile-name-lg">Hostel Administrator</h3>
+                        <p class="profile-email">admin@hostel.edu</p>
+                        <div class="profile-meta-row">
+                            <span class="profile-meta-chip">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                </svg>
+                                <strong>ADM-001</strong>
+                            </span>
+                            <span class="profile-meta-chip">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <strong>Campus Housing & Operations</strong>
+                            </span>
+                            <span class="profile-meta-chip">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                                <strong>System Administrator</strong>
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="dashboard-card">
-                    <h3>Occupied Rooms</h3>
-                    <p id="occupiedRoomCount">0</p>
+                <!-- 4 Stats Cards Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-blue">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-value" id="studentCount">0</div>
+                        <div class="stat-label">Total Registered Students</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-emerald">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-value" id="roomCount">0</div>
+                        <div class="stat-label">Total Hostel Rooms</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-sky">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 4v16"></path>
+                                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                                <path d="M2 17h20"></path>
+                                <path d="M6 8v9"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-value" id="occupiedRoomCount">0</div>
+                        <div class="stat-label">Occupied Rooms / Beds</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-amber">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                        </div>
+                        <div class="stat-value" id="unresolvedCount">0</div>
+                        <div class="stat-label">Active Grievances</div>
+                    </div>
                 </div>
 
-                <div class="dashboard-card">
-                    <h3>Unresolved Complaints</h3>
-                    <p id="unresolvedCount">0</p>
+                <!-- Notifications & Alerts Feed Card (Matches Screenshot 2) -->
+                <div class="dash-notifications-wrap">
+                    <div class="dash-notif-card">
+                        <div class="dash-notif-header">
+                            <div class="dash-notif-title-wrap">
+                                <div class="dash-notif-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="dash-notif-title">
+                                        <span>Recent Notifications & Campus Alerts</span>
+                                        <span class="all-caught-badge">✓ All Caught Up</span>
+                                    </h3>
+                                    <p class="dash-notif-sub">Stay informed on student room allocations, maintenance requests, and database updates</p>
+                                </div>
+                            </div>
+
+                            <div class="dash-notif-filters">
+                                <button class="dash-notif-filter-btn active">All</button>
+                                <button class="dash-notif-filter-btn">Unread</button>
+                            </div>
+                        </div>
+
+                        <div class="dash-notif-list">
+                            <div class="dash-notif-item">
+                                <div class="dash-notif-item-main">
+                                    <div class="dash-notif-item-content">
+                                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                            <span class="dash-notif-badge-pill">SYSTEM</span>
+                                            <span style="font-size: 13.5px; font-weight:700; color:#0F172A;">Hostel administration backend active.</span>
+                                        </div>
+                                        <div style="font-size:12.5px; color:#64748B;">Ready to manage room allocations and process student grievances.</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 12px; color:#94A3B8; font-weight:600;">Just now</span>
+                            </div>
+
+                            <div class="dash-notif-item">
+                                <div class="dash-notif-item-main">
+                                    <div class="dash-notif-item-content">
+                                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                            <span class="dash-notif-badge-pill">DATABASE</span>
+                                            <span style="font-size: 13.5px; font-weight:700; color:#0F172A;">Connected to MySQL database.</span>
+                                        </div>
+                                        <div style="font-size:12.5px; color:#64748B;">All tables (students, rooms, allocations, complaints) in sync.</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 12px; color:#94A3B8; font-weight:600;">Active</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-notif-footer">
+                            <span>Showing verified system logs</span>
+                            <span class="db-badge">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                </svg>
+                                <span>Real-time synced with MySQL database</span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
 
-        
-<!-- Students Management -->
-<section id="students" class="content-section" style="display:none;">
-    <h2>Students Management</h2>
+            </section>
 
-    <p id="studentsMessage">Click Students to load records.</p>
+            <!-- ============================================================
+                 STUDENTS MANAGEMENT SECTION
+                 ============================================================ -->
+            <section id="students" class="content-section" style="display: none;">
+                <div class="section-head-bar">
+                    <div>
+                        <h2 class="section-head-title">Students Management</h2>
+                        <p class="section-head-sub">View and verify all registered hostel residents.</p>
+                    </div>
+                </div>
 
-    <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; background:white;">
-            <thead>
-                <tr>
-                    <th>Student ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Department</th>
-                    <th>Phone</th>
-                </tr>
-            </thead>
-            <tbody id="studentsTable">
-                <tr>
-                    <td colspan="5">Loading students...</td>
-                </tr>
-            </tbody>
-        </table>
+                <div class="data-table-card">
+                    <div class="table-toolbar">
+                        <div class="table-search-input">
+                            <span class="table-search-icon">🔍</span>
+                            <input type="text" id="studentSearchInput" placeholder="Filter by name, department, or ID...">
+                        </div>
+                        <div id="studentsMessage" style="font-size: 13px; color: #64748B; font-weight:600;">Loading records...</div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Department</th>
+                                    <th>Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTable">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; padding: 30px; color:#64748B;">Loading students...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================
+                 ROOMS MANAGEMENT SECTION
+                 ============================================================ -->
+            <section id="rooms" class="content-section" style="display: none;">
+                <div class="section-head-bar">
+                    <div>
+                        <h2 class="section-head-title">Rooms Management</h2>
+                        <p class="section-head-sub">Monitor hostel room capacities, block distribution, and available beds.</p>
+                    </div>
+                </div>
+
+                <div class="data-table-card">
+                    <div class="table-toolbar">
+                        <div class="table-search-input">
+                            <span class="table-search-icon">🔍</span>
+                            <input type="text" id="roomSearchInput" placeholder="Filter by room, block, or floor...">
+                        </div>
+                        <div id="roomsMessage" style="font-size: 13px; color: #64748B; font-weight:600;"></div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Room ID</th>
+                                    <th>Room Number</th>
+                                    <th>Block</th>
+                                    <th>Floor</th>
+                                    <th>Capacity</th>
+                                    <th>Occupied Beds</th>
+                                    <th>Available Beds</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roomsTable">
+                                <tr>
+                                    <td colspan="7" style="text-align:center; padding: 30px; color:#64748B;">Click Rooms to load records.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================
+                 ALLOCATIONS MANAGEMENT SECTION
+                 ============================================================ -->
+            <section id="allocations" class="content-section" style="display: none;">
+                <div class="section-head-bar">
+                    <div>
+                        <h2 class="section-head-title">Allocations Management</h2>
+                        <p class="section-head-sub">Assign student housing and manage active room allocations.</p>
+                    </div>
+                </div>
+
+                <!-- Allocate Room Form Card -->
+                <div class="form-card">
+                    <div class="form-card-title">
+                        <div class="icon-chip">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </div>
+                        <span>Allocate Room to Student</span>
+                    </div>
+
+                    <form id="allocationForm">
+                        <div class="form-grid-3">
+                            <div class="form-field">
+                                <label for="allocationStudentId">Student ID</label>
+                                <input type="number" id="allocationStudentId" placeholder="e.g. 101" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="allocationRoomId">Room ID</label>
+                                <input type="number" id="allocationRoomId" placeholder="e.g. 1" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="allocationDate">Allocation Date</label>
+                                <input type="date" id="allocationDate" required>
+                            </div>
+
+                            <div>
+                                <button type="submit" class="form-submit-btn">
+                                    <span>Allocate Room</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="allocationsMessage" class="form-feedback-msg"></div>
+                </div>
+
+                <!-- Allocations Records Table -->
+                <div class="data-table-card">
+                    <div class="table-toolbar">
+                        <div style="font-weight: 800; font-size: 15px; color: #0F172A;">All Allocation Records</div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Allocation ID</th>
+                                    <th>Student ID</th>
+                                    <th>Room ID</th>
+                                    <th>Allocation Date</th>
+                                    <th>End Date / Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allocationsTable">
+                                <tr>
+                                    <td colspan="6" style="text-align:center; padding: 30px; color:#64748B;">Click Allocations to load records.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================
+                 COMPLAINTS MANAGEMENT SECTION
+                 ============================================================ -->
+            <section id="complaints" class="content-section" style="display: none;">
+                <div class="section-head-bar">
+                    <div>
+                        <h2 class="section-head-title">Student Complaints & Grievances</h2>
+                        <p class="section-head-sub">Review and resolve reported hostel maintenance and facility issues.</p>
+                    </div>
+                </div>
+
+                <div class="data-table-card">
+                    <div class="table-toolbar">
+                        <div style="font-weight: 800; font-size: 15px; color: #0F172A;">Submitted Complaints Feed</div>
+                        <div id="complaintsMessage" style="font-size: 13px; color: #64748B; font-weight:600;"></div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Complaint ID</th>
+                                    <th>Student ID</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="complaintsTable">
+                                <tr>
+                                    <td colspan="6" style="text-align:center; padding: 30px; color:#64748B;">Click Complaints to load records.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </div>
     </div>
-</section>
 
+    <!-- JavaScript Application Logic -->
+    <script>
+        const API_BASE = "http://localhost:8080";
 
-        <!-- Rooms placeholder -->
-        
-<section id="rooms" class="content-section" style="display:none;">
-    <h2>Rooms Management</h2>
+        // Sidebar collapse functionality
+        const sidebar = document.getElementById("sidebar");
+        const collapseBtn = document.getElementById("sidebarCollapseBtn");
 
-    <p id="roomsMessage"></p>
+        collapseBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("collapsed");
+        });
 
-    <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; background:white;">
-            <thead>
-                <tr>
-                    <th>Room ID</th>
-                    <th>Room Number</th>
-                    <th>Block</th>
-                    <th>Floor</th>
-                    <th>Capacity</th>
-                    <th>Occupied Beds</th>
-<th>Available Beds</th>
-                </tr>
-            </thead>
-            <tbody id="roomsTable">
-                <tr>
-                    <td colspan="5">Click Rooms to load records.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</section>
+        // Topbar Popovers (Notifications & Profile)
+        const notifBtn = document.getElementById("notifBtn");
+        const notifPopover = document.getElementById("notifPopover");
+        const profilePillBtn = document.getElementById("profilePillBtn");
+        const profilePopover = document.getElementById("profilePopover");
 
+        notifBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            notifPopover.classList.toggle("hidden");
+            profilePopover.classList.add("hidden");
+        });
 
-       
-<!-- Allocations Management -->
-<section id="allocations" class="content-section" style="display:none;">
-    <h2>Allocations Management</h2>
-    
-<h3>Allocate Room</h3>
+        profilePillBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            profilePopover.classList.toggle("hidden");
+            notifPopover.classList.add("hidden");
+        });
 
-<form id="allocationForm">
-    <label>Student ID:</label>
-    <input type="number" id="allocationStudentId" required>
+        document.addEventListener("click", () => {
+            notifPopover.classList.add("hidden");
+            profilePopover.classList.add("hidden");
+        });
 
-    <label>Room ID:</label>
-    <input type="number" id="allocationRoomId" required>
-
-    <label>Allocation Date:</label>
-    <input type="date" id="allocationDate" required>
-
-    <button type="submit">Allocate Room</button>
-</form>
-
-
-    <p id="allocationsMessage"></p>
-
-    <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; background:white;">
-            <thead>
-                <tr>
-                    <th>Allocation ID</th>
-                    <th>Student ID</th>
-                    <th>Room ID</th>
-                    <th>Allocation Date</th>
-                    <th>End Date</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="allocationsTable">
-                <tr>
-                    <td colspan="6">Click Allocations to load records.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-
-        <!-- Complaints -->
-        <section id="complaints" class="content-section" style="display:none;">
-            <h2>Student Complaints</h2>
-
-            <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; background:white;">
-                    <thead>
-                        <tr>
-                            <th style="padding:12px; border:1px solid #ddd;">Complaint ID</th>
-                            <th style="padding:12px; border:1px solid #ddd;">Student ID</th>
-                            <th style="padding:12px; border:1px solid #ddd;">Description</th>
-                            <th style="padding:12px; border:1px solid #ddd;">Status</th>
-                            <th style="padding:12px; border:1px solid #ddd;">Date</th>
-                            <th style="padding:12px; border:1px solid #ddd;">Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="complaintsTable">
-                        <tr>
-                            <td colspan="5" style="padding:12px;">Click Complaints to load records.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <p id="complaintsMessage"></p>
-        </section>
-
-    </main>
-</div>
-
-<script>
-const API_BASE = "http://localhost:8080";
-
-// Load dashboard data
-async function loadDashboard() {
-    try {
-        const response = await fetch(`${API_BASE}/api/admin/dashboard`);
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-            throw new Error(data.message || "Failed to load dashboard");
+        // Set default today's date for allocation date picker
+        const dateInput = document.getElementById("allocationDate");
+        if (dateInput) {
+            dateInput.value = new Date().toISOString().split("T")[0];
         }
 
-        document.getElementById("studentCount").textContent = data.students;
-        document.getElementById("roomCount").textContent = data.totalRooms;
-        document.getElementById("occupiedRoomCount").textContent = data.occupiedRooms;
-        document.getElementById("unresolvedCount").textContent = data.unresolvedComplaints;
+        // ==========================================
+        // 1. Load Dashboard Metrics
+        // ==========================================
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/dashboard`);
+                const data = await response.json();
 
-    } catch (error) {
-        console.error("Dashboard error:", error);
-    }
-}
-
-// Load all complaints from the backend
-
-async function loadComplaints() {
-    const table = document.getElementById("complaintsTable");
-    const message = document.getElementById("complaintsMessage");
-
-    table.innerHTML =
-        "<tr><td colspan='6' style='padding:12px;'>Loading complaints...</td></tr>";
-    message.textContent = "";
-
-    try {
-        const response = await fetch(`${API_BASE}/api/complaints`);
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-            throw new Error(data.message || "Failed to load complaints");
-        }
-
-        table.innerHTML = "";
-
-        if (!data.complaints || data.complaints.length === 0) {
-            table.innerHTML =
-                "<tr><td colspan='6' style='padding:12px;'>No complaints found.</td></tr>";
-            return;
-        }
-
-        data.complaints.forEach(complaint => {
-            const row = document.createElement("tr");
-
-            const values = [
-                complaint.complaint_id,
-                complaint.student_id,
-                complaint.description,
-                complaint.status,
-                complaint.created_at
-            ];
-
-            values.forEach(value => {
-                const cell = document.createElement("td");
-                cell.style.padding = "12px";
-                cell.style.border = "1px solid #ddd";
-                cell.textContent = value ?? "";
-                row.appendChild(cell);
-            });
-
-            const actionCell = document.createElement("td");
-            actionCell.style.padding = "12px";
-            actionCell.style.border = "1px solid #ddd";
-
-            const statusSelect = document.createElement("select");
-
-            ["Pending", "In Progress", "Resolved"].forEach(status => {
-                const option = document.createElement("option");
-                option.value = status;
-                option.textContent = status;
-                statusSelect.appendChild(option);
-            });
-
-            statusSelect.value = complaint.status;
-
-            const updateButton = document.createElement("button");
-            updateButton.textContent = "Update";
-
-            updateButton.addEventListener("click", async () => {
-                try {
-                    updateButton.disabled = true;
-                    message.textContent = "Updating complaint...";
-
-                    const updateResponse = await fetch(
-                        `${API_BASE}/api/complaints/${complaint.complaint_id}`,
-                        {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                status: statusSelect.value
-                            })
-                        }
-                    );
-
-                    const result = await updateResponse.json();
-
-                    if (!updateResponse.ok || !result.success) {
-                        throw new Error(result.message || "Update failed");
-                    }
-
-                    message.textContent = "Complaint status updated successfully!";
-                    await loadComplaints();
-                    await loadDashboard();
-
-                } catch (error) {
-                    message.textContent = error.message;
-                } finally {
-                    updateButton.disabled = false;
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Failed to load dashboard metrics");
                 }
-            });
 
-            actionCell.appendChild(statusSelect);
-            actionCell.appendChild(document.createElement("br"));
-            actionCell.appendChild(updateButton);
-            row.appendChild(actionCell);
+                document.getElementById("studentCount").textContent = data.students ?? 0;
+                document.getElementById("roomCount").textContent = data.totalRooms ?? 0;
+                document.getElementById("occupiedRoomCount").textContent = data.occupiedRooms ?? 0;
+                document.getElementById("unresolvedCount").textContent = data.unresolvedComplaints ?? 0;
 
-            table.appendChild(row);
-        });
-
-    } catch (error) {
-        console.error("Complaints error:", error);
-        table.innerHTML =
-            "<tr><td colspan='6' style='padding:12px;'>Could not load complaints.</td></tr>";
-        message.textContent = error.message;
-    }
-}
-
-async function loadRooms() {
-    const table = document.getElementById("roomsTable");
-
-    try {
-        const response = await fetch(`${API_BASE}/api/rooms`);
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-            throw new Error(result.message || "Failed to load rooms");
-        }
-
-        table.innerHTML = "";
-
-        result.rooms.forEach(room => {
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>${room.room_id}</td>
-                <td>${room.room_number}</td>
-                <td>${room.block}</td>
-                <td>${room.floor}</td>
-                <td>${room.capacity}</td>
-                <td>${room.occupied}</td>
-                <td>${room.available}</td>
-            `;
-
-            table.appendChild(row);
-        });
-
-    } catch (error) {
-        console.error("Rooms error:", error);
-        table.innerHTML =
-            `<tr><td colspan="7">Could not load rooms: ${error.message}</td></tr>`;
-    }
-}
-
-
-async function loadAllocations() {
-    const table = document.getElementById("allocationsTable");
-    const message = document.getElementById("allocationsMessage");
-
-    try {
-        message.textContent = "Loading allocations...";
-
-        const response = await fetch(`${API_BASE}/api/allocations`);
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-            throw new Error(result.message || "Failed to load allocations");
-        }
-
-        table.innerHTML = "";
-
-        if (result.allocations.length === 0) {
-            table.innerHTML =
-                '<tr><td colspan="6">No allocations found.</td></tr>';
-        } else {
-            result.allocations.forEach(allocation => {
-                const row = document.createElement("tr");
-
-                [
-                    allocation.allocation_id,
-                    allocation.student_id,
-                    allocation.room_id,
-                    allocation.allocation_date,
-                    allocation.end_date || "Active"
-                ].forEach(value => {
-                    const cell = document.createElement("td");
-                    cell.textContent = value ?? "";
-                    cell.style.padding = "12px";
-                    cell.style.border = "1px solid #ddd";
-                    row.appendChild(cell);
-                });
-
-                const actionCell = document.createElement("td");
-                actionCell.style.padding = "12px";
-                actionCell.style.border = "1px solid #ddd";
-
-                if (!allocation.end_date) {
-                    const button = document.createElement("button");
-                    button.textContent = "Deallocate";
-
-                    button.addEventListener("click", () => {
-                        deallocateRoom(allocation.allocation_id);
-                    });
-
-                    actionCell.appendChild(button);
-                } else {
-                    actionCell.textContent = "Completed";
-                }
-
-                row.appendChild(actionCell);
-                table.appendChild(row);
-            });
-        }
-
-        message.textContent = "";
-    } catch (error) {
-        console.error("Allocations error:", error);
-        table.innerHTML =
-            '<tr><td colspan="6">Could not load allocations.</td></tr>';
-        message.textContent = error.message;
-    }
-}
-
-
-
-document.getElementById("allocationForm").addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    const studentId = document.getElementById("allocationStudentId").value;
-    const roomId = document.getElementById("allocationRoomId").value;
-    const allocationDate = document.getElementById("allocationDate").value;
-    const message = document.getElementById("allocationsMessage");
-
-    message.textContent = "Allocating room...";
-
-    try {
-        const response = await fetch(`${API_BASE}/api/allocations`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                student_id: studentId,
-                room_id: roomId,
-                allocation_date: allocationDate
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-            throw new Error(result.message || "Allocation failed");
-        }
-
-        message.textContent = "Room allocated successfully!";
-        document.getElementById("allocationForm").reset();
-
-        await loadAllocations();
-        await loadRooms();
-        await loadDashboard();
-    } catch (error) {
-        message.textContent = error.message;
-    }
-});
-
-
-async function deallocateRoom(allocationId) {
-    const message = document.getElementById("allocationsMessage");
-
-    if (!confirm("Are you sure you want to deallocate this room?")) {
-        return;
-    }
-
-    try {
-        message.textContent = "Deallocating room...";
-
-        const response = await fetch(
-            `${API_BASE}/api/allocations/${allocationId}/deallocate`,
-            {
-                method: "PUT"
+            } catch (error) {
+                console.error("Dashboard error:", error);
             }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-            throw new Error(result.message || "Deallocation failed");
         }
 
-        message.textContent = "Room deallocated successfully!";
+        // ==========================================
+        // 2. Load Complaints
+        // ==========================================
+        async function loadComplaints() {
+            const table = document.getElementById("complaintsTable");
+            const message = document.getElementById("complaintsMessage");
 
-        await loadAllocations();
-        await loadRooms();
-        await loadDashboard();
+            table.innerHTML = "<tr><td colspan='6' style='text-align:center; padding: 24px; color:#64748B;'>Loading complaints...</td></tr>";
+            message.textContent = "";
 
-    } catch (error) {
-        message.textContent = error.message;
-    }
-}
+            try {
+                const response = await fetch(`${API_BASE}/api/complaints`);
+                const data = await response.json();
 
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Failed to load complaints");
+                }
 
-async function loadStudents() {
-    const table = document.getElementById("studentsTable");
-    const message = document.getElementById("studentsMessage");
+                table.innerHTML = "";
 
-    try {
-        message.textContent = "Loading students...";
+                if (!data.complaints || data.complaints.length === 0) {
+                    table.innerHTML = "<tr><td colspan='6' style='text-align:center; padding: 24px; color:#64748B;'>No complaints found.</td></tr>";
+                    return;
+                }
 
-        const response = await fetch(`${API_BASE}/api/admin/students`);
-        const result = await response.json();
+                data.complaints.forEach(complaint => {
+                    const row = document.createElement("tr");
 
-        if (!response.ok || !result.success) {
-            throw new Error(result.message || "Failed to load students");
+                    // Status Pill
+                    let statusClass = "status-pending";
+                    if (complaint.status === "In Progress") statusClass = "status-in-progress";
+                    if (complaint.status === "Resolved") statusClass = "status-resolved";
+
+                    row.innerHTML = `
+                        <td style="font-weight:700;">#${complaint.complaint_id}</td>
+                        <td><span style="display:inline-block; font-weight:700; color:#1D4ED8; background:#DBEAFE; padding:2px 8px; border-radius:6px; font-size:12px;">ID ${complaint.student_id}</span></td>
+                        <td style="max-width:320px; line-height:1.5;">${escapeHtml(complaint.description)}</td>
+                        <td><span class="status-pill ${statusClass}">${escapeHtml(complaint.status)}</span></td>
+                        <td style="color:#64748B; font-size:12.5px;">${escapeHtml(complaint.created_at || "—")}</td>
+                        <td>
+                            <div style="display:flex; align-items:center;">
+                                <select class="table-select" id="statusSelect_${complaint.complaint_id}">
+                                    <option value="Pending" ${complaint.status === "Pending" ? "selected" : ""}>Pending</option>
+                                    <option value="In Progress" ${complaint.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                                    <option value="Resolved" ${complaint.status === "Resolved" ? "selected" : ""}>Resolved</option>
+                                </select>
+                                <button class="table-btn table-btn-primary" onclick="updateComplaintStatus('${complaint.complaint_id}')">Update</button>
+                            </div>
+                        </td>
+                    `;
+
+                    table.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Complaints error:", error);
+                table.innerHTML = `<tr><td colspan='6' style='text-align:center; padding: 24px; color:#DC2626;'>Could not load complaints: ${escapeHtml(error.message)}</td></tr>`;
+                message.textContent = error.message;
+            }
         }
 
-        table.innerHTML = "";
+        async function updateComplaintStatus(complaintId) {
+            const select = document.getElementById(`statusSelect_${complaintId}`);
+            const newStatus = select.value;
+            const message = document.getElementById("complaintsMessage");
 
-        if (result.students.length === 0) {
-            table.innerHTML =
-                '<tr><td colspan="5">No students found.</td></tr>';
-        } else {
-            result.students.forEach(student => {
+            message.textContent = "Updating status...";
+            message.style.color = "#2563EB";
+
+            try {
+                const response = await fetch(`${API_BASE}/api/complaints/${complaintId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Update failed");
+                }
+
+                message.textContent = "Complaint status updated successfully!";
+                message.style.color = "#16A34A";
+                await loadComplaints();
+                await loadDashboard();
+
+            } catch (error) {
+                message.textContent = error.message;
+                message.style.color = "#DC2626";
+            }
+        }
+
+        // ==========================================
+        // 3. Load Rooms
+        // ==========================================
+        let allRoomsCache = [];
+
+        async function loadRooms() {
+            const table = document.getElementById("roomsTable");
+            const message = document.getElementById("roomsMessage");
+
+            try {
+                const response = await fetch(`${API_BASE}/api/rooms`);
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Failed to load rooms");
+                }
+
+                allRoomsCache = result.rooms || [];
+                renderRooms(allRoomsCache);
+
+            } catch (error) {
+                console.error("Rooms error:", error);
+                table.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:#DC2626;">Could not load rooms: ${escapeHtml(error.message)}</td></tr>`;
+            }
+        }
+
+        function renderRooms(rooms) {
+            const table = document.getElementById("roomsTable");
+            table.innerHTML = "";
+
+            if (rooms.length === 0) {
+                table.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:#64748B;">No rooms found.</td></tr>';
+                return;
+            }
+
+            rooms.forEach(room => {
                 const row = document.createElement("tr");
 
-                [
-                    student.student_id,
-                    student.name,
-                    student.email,
-                    student.department,
-                    student.phone
-                ].forEach(value => {
-                    const cell = document.createElement("td");
-                    cell.textContent = value ?? "";
-                    cell.style.padding = "12px";
-                    cell.style.border = "1px solid #ddd";
-                    row.appendChild(cell);
-                });
+                const capacity = parseInt(room.capacity) || 1;
+                const occupied = parseInt(room.occupied) || 0;
+                const available = parseInt(room.available) || 0;
+                const percent = Math.min(100, Math.round((occupied / capacity) * 100));
+
+                row.innerHTML = `
+                    <td style="font-weight:700;">#${room.room_id}</td>
+                    <td style="font-weight:800; color:#0F172A;">Room ${escapeHtml(room.room_number)}</td>
+                    <td><span style="background:#F1F5F9; padding:2px 8px; border-radius:6px; font-weight:700;">Block ${escapeHtml(room.block)}</span></td>
+                    <td>Floor ${escapeHtml(room.floor)}</td>
+                    <td style="font-weight:600;">${capacity} beds</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:700; color:${occupied >= capacity ? '#DC2626' : '#2563EB'};">${occupied}</span>
+                            <div style="width:60px; height:6px; background:#E2E8F0; border-radius:3px; overflow:hidden;">
+                                <div style="width:${percent}%; height:100%; background:${occupied >= capacity ? '#DC2626' : '#2563EB'};"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span style="font-weight:800; color:${available > 0 ? '#10B981' : '#94A3B8'};">${available} available</span></td>
+                `;
 
                 table.appendChild(row);
             });
         }
 
-        message.textContent = "Students loaded successfully.";
+        // Live Room Search Filter
+        const roomSearchInput = document.getElementById("roomSearchInput");
+        if (roomSearchInput) {
+            roomSearchInput.addEventListener("input", (e) => {
+                const q = e.target.value.toLowerCase().trim();
+                const filtered = allRoomsCache.filter(r => 
+                    (r.room_number && r.room_number.toLowerCase().includes(q)) ||
+                    (r.block && r.block.toLowerCase().includes(q)) ||
+                    (r.floor && r.floor.toString().toLowerCase().includes(q))
+                );
+                renderRooms(filtered);
+            });
+        }
 
-    } catch (error) {
-        console.error("Students error:", error);
-        table.innerHTML =
-            '<tr><td colspan="5">Could not load students.</td></tr>';
-        message.textContent = error.message;
-    }
-}
+        // ==========================================
+        // 4. Load Allocations
+        // ==========================================
+        async function loadAllocations() {
+            const table = document.getElementById("allocationsTable");
+            const message = document.getElementById("allocationsMessage");
 
+            try {
+                const response = await fetch(`${API_BASE}/api/allocations`);
+                const result = await response.json();
 
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Failed to load allocations");
+                }
 
+                table.innerHTML = "";
 
-// Sidebar navigation
-document.querySelectorAll(".nav-btn[data-page]").forEach(button => {
-    button.addEventListener("click", () => {
-        const page = button.dataset.page;
+                if (!result.allocations || result.allocations.length === 0) {
+                    table.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:#64748B;">No allocations found.</td></tr>';
+                } else {
+                    result.allocations.forEach(allocation => {
+                        const row = document.createElement("tr");
 
-        document.querySelectorAll(".content-section").forEach(section => {
-            section.style.display = "none";
+                        const isEnded = allocation.end_date && allocation.end_date.trim() !== "";
+
+                        row.innerHTML = `
+                            <td style="font-weight:700;">#${allocation.allocation_id}</td>
+                            <td><span style="font-weight:700; color:#1D4ED8; background:#DBEAFE; padding:2px 8px; border-radius:6px;">Student ${escapeHtml(allocation.student_id)}</span></td>
+                            <td style="font-weight:700;">Room #${escapeHtml(allocation.room_id)}</td>
+                            <td>${escapeHtml(allocation.allocation_date)}</td>
+                            <td>
+                                ${isEnded 
+                                    ? `<span class="status-pill" style="background:#F1F5F9; color:#64748B;">Ended: ${escapeHtml(allocation.end_date)}</span>` 
+                                    : `<span class="status-pill status-resolved">Active</span>`}
+                            </td>
+                            <td>
+                                ${!isEnded 
+                                    ? `<button class="table-btn table-btn-danger" onclick="deallocateRoom(${allocation.allocation_id})">Deallocate</button>` 
+                                    : `<span style="font-size:12px; color:#94A3B8;">Completed</span>`}
+                            </td>
+                        `;
+
+                        table.appendChild(row);
+                    });
+                }
+
+            } catch (error) {
+                console.error("Allocations error:", error);
+                table.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:#DC2626;">Could not load allocations: ${escapeHtml(error.message)}</td></tr>`;
+            }
+        }
+
+        // Allocate Room Form Submit
+        document.getElementById("allocationForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const studentId = document.getElementById("allocationStudentId").value;
+            const roomId = document.getElementById("allocationRoomId").value;
+            const allocationDate = document.getElementById("allocationDate").value;
+            const message = document.getElementById("allocationsMessage");
+
+            message.textContent = "Allocating room in database...";
+            message.style.color = "#2563EB";
+
+            try {
+                const response = await fetch(`${API_BASE}/api/allocations`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        room_id: roomId,
+                        allocation_date: allocationDate
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Allocation failed");
+                }
+
+                message.textContent = "✓ Room allocated successfully!";
+                message.style.color = "#16A34A";
+                document.getElementById("allocationForm").reset();
+                if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
+
+                await loadAllocations();
+                await loadRooms();
+                await loadDashboard();
+
+            } catch (error) {
+                message.textContent = "⚠ " + error.message;
+                message.style.color = "#DC2626";
+            }
         });
 
-        document.getElementById(page).style.display = "block";
-        document.getElementById("pageTitle").textContent =
-            button.textContent.trim();
+        async function deallocateRoom(allocationId) {
+            const message = document.getElementById("allocationsMessage");
 
-        document.querySelectorAll(".nav-btn").forEach(navButton => {
-            navButton.classList.remove("active");
+            if (!confirm(`Are you sure you want to deallocate Room allocation #${allocationId}?`)) {
+                return;
+            }
+
+            try {
+                message.textContent = "Deallocating room...";
+                message.style.color = "#2563EB";
+
+                const response = await fetch(`${API_BASE}/api/allocations/${allocationId}/deallocate`, {
+                    method: "PUT"
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Deallocation failed");
+                }
+
+                message.textContent = "✓ Room deallocated successfully!";
+                message.style.color = "#16A34A";
+
+                await loadAllocations();
+                await loadRooms();
+                await loadDashboard();
+
+            } catch (error) {
+                message.textContent = "⚠ " + error.message;
+                message.style.color = "#DC2626";
+            }
+        }
+
+        // ==========================================
+        // 5. Load Students
+        // ==========================================
+        let allStudentsCache = [];
+
+        async function loadStudents() {
+            const table = document.getElementById("studentsTable");
+            const message = document.getElementById("studentsMessage");
+
+            try {
+                message.textContent = "Loading students...";
+                const response = await fetch(`${API_BASE}/api/admin/students`);
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Failed to load students");
+                }
+
+                allStudentsCache = result.students || [];
+                renderStudents(allStudentsCache);
+                message.textContent = `${allStudentsCache.length} students registered`;
+
+            } catch (error) {
+                console.error("Students error:", error);
+                table.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:#DC2626;">Could not load students: ${escapeHtml(error.message)}</td></tr>`;
+                message.textContent = error.message;
+            }
+        }
+
+        function renderStudents(students) {
+            const table = document.getElementById("studentsTable");
+            table.innerHTML = "";
+
+            if (students.length === 0) {
+                table.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:24px; color:#64748B;">No students found.</td></tr>';
+                return;
+            }
+
+            students.forEach(student => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td style="font-weight:700;"><span style="color:#1D4ED8; background:#DBEAFE; padding:2px 8px; border-radius:6px;">#${student.student_id}</span></td>
+                    <td style="font-weight:800; color:#0F172A;">${escapeHtml(student.name)}</td>
+                    <td style="color:#475569;">${escapeHtml(student.email)}</td>
+                    <td><span style="background:#F1F5F9; padding:2px 8px; border-radius:6px; font-weight:600;">${escapeHtml(student.department)}</span></td>
+                    <td style="color:#64748B;">${escapeHtml(student.phone)}</td>
+                `;
+
+                table.appendChild(row);
+            });
+        }
+
+        // Live Student Search Filter
+        const studentSearchInput = document.getElementById("studentSearchInput");
+        if (studentSearchInput) {
+            studentSearchInput.addEventListener("input", (e) => {
+                const q = e.target.value.toLowerCase().trim();
+                const filtered = allStudentsCache.filter(s => 
+                    (s.name && s.name.toLowerCase().includes(q)) ||
+                    (s.department && s.department.toLowerCase().includes(q)) ||
+                    (s.student_id && s.student_id.toString().includes(q)) ||
+                    (s.email && s.email.toLowerCase().includes(q))
+                );
+                renderStudents(filtered);
+            });
+        }
+
+        // ==========================================
+        // 6. Navigation Tabs
+        // ==========================================
+        document.querySelectorAll(".nav-btn[data-page]").forEach(button => {
+            button.addEventListener("click", () => {
+                const page = button.dataset.page;
+
+                document.querySelectorAll(".content-section").forEach(section => {
+                    section.style.display = "none";
+                });
+
+                const targetSection = document.getElementById(page);
+                if (targetSection) targetSection.style.display = "block";
+
+                document.getElementById("pageTitle").textContent = button.querySelector(".nav-label") 
+                    ? button.querySelector(".nav-label").textContent.trim() 
+                    : button.textContent.trim();
+
+                document.querySelectorAll(".nav-btn[data-page]").forEach(navButton => {
+                    navButton.classList.remove("active");
+                });
+
+                button.classList.add("active");
+
+                if (page === "dashboard") loadDashboard();
+                if (page === "students") loadStudents();
+                if (page === "rooms") loadRooms();
+                if (page === "complaints") loadComplaints();
+                if (page === "allocations") loadAllocations();
+            });
         });
 
-        button.classList.add("active");
+        // Logout
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+        });
 
-        if (page === "dashboard") {
-            loadDashboard();
+        function escapeHtml(text) {
+            if (!text) return "";
+            const div = document.createElement("div");
+            div.textContent = text;
+            return div.innerHTML;
         }
-        if (page === "students") {
-    loadStudents();
-}
-        if (page === "rooms") {
-    loadRooms();
-}
 
-        if (page === "complaints") {
-            loadComplaints();
-        }
-        if (page === "allocations") {
-    loadAllocations();
-}
-    });
-});
-
-// Logout
-document.getElementById("logoutBtn").addEventListener("click", () => {
-    window.location.href = "login.html";
-});
-
-// Initial dashboard load
-loadDashboard();
-</script>
+        // Initial Load
+        loadDashboard();
+    </script>
 
 </body>
 </html>
