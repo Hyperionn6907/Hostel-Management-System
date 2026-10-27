@@ -15,51 +15,17 @@ using json = nlohmann::json;
 
 #include "student.cpp"
 
-int main() {
-    
-const char* dbHost = getenv("HOSTEL_DB_HOST");
-const char* dbUser = getenv("HOSTEL_DB_USER");
-const char* dbPassword = getenv("HOSTEL_DB_PASSWORD");
-const char* dbName = getenv("HOSTEL_DB_NAME");
+// ============================================================================
+// OOP CLASSES FOR EACH API
+// ============================================================================
 
-if (dbHost == NULL || dbUser == NULL ||
-    dbPassword == NULL || dbName == NULL) {
-    cout << "Database environment variables are missing!\n";
-    return 1;
-}
+class LoginAPI {
+private:
+    MYSQL* conn;
+public:
+    LoginAPI(MYSQL* c) : conn(c) {}
 
-MYSQL* conn = mysql_init(NULL);
-
-if (conn == NULL) {
-    cout << "MySQL initialization failed\n";
-    return 1;
-}
-
-if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
-                       dbName, 3306, NULL, 0) == NULL) {
-    cout << "Database connection failed: "
-         << mysql_error(conn) << endl;
-    mysql_close(conn);
-    return 1;
-}
-
-
-    httplib::Server server;
-
-    server.set_default_headers({
-        {"Access-Control-Allow-Origin", "*"},
-        {"Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"},
-        {"Access-Control-Allow-Headers", "Content-Type"}
-    });
-
-    server.Options(R"(.*)", [](const httplib::Request& req,
-                               httplib::Response& res) {
-        res.status = 200;
-    });
-
-    server.Post("/api/login",
-        [&](const httplib::Request& req, httplib::Response& res) {
-
+    void handleLogin(const httplib::Request& req, httplib::Response& res) {
         try {
             json data = json::parse(req.body);
 
@@ -176,11 +142,16 @@ if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
                 "application/json"
             );
         }
-    });
+    }
+};
 
-        server.Get(R"(/api/students/(\d+))",
-        [&](const httplib::Request& req, httplib::Response& res) {
+class StudentAPI {
+private:
+    MYSQL* conn;
+public:
+    StudentAPI(MYSQL* c) : conn(c) {}
 
+    void handleGetStudentById(const httplib::Request& req, httplib::Response& res) {
         string id = req.matches[1];
 
         string query =
@@ -229,12 +200,260 @@ if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
         }
 
         mysql_free_result(result);
-    });
+    }
 
-    
-    server.Post("/api/complaints",
-        [&](const httplib::Request& req, httplib::Response& res) {
+    void handleGetAllStudents(const httplib::Request& req, httplib::Response& res) {
+        string query =
+            "SELECT student_id, name, email, department, phone "
+            "FROM students ORDER BY student_id";
 
+        if (mysql_query(conn, query.c_str()) != 0) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Database query failed"})",
+                "application/json"
+            );
+            return;
+        }
+
+        MYSQL_RES* result = mysql_store_result(conn);
+
+        if (result == NULL) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Could not read database result"})",
+                "application/json"
+            );
+            return;
+        }
+
+        json response;
+        response["success"] = true;
+        response["students"] = json::array();
+
+        MYSQL_ROW row;
+
+        while ((row = mysql_fetch_row(result)) != NULL) {
+            json student;
+
+            student["student_id"] = row[0] ? row[0] : "";
+            student["name"] = row[1] ? row[1] : "";
+            student["email"] = row[2] ? row[2] : "";
+            student["department"] = row[3] ? row[3] : "";
+            student["phone"] = row[4] ? row[4] : "";
+
+            response["students"].push_back(student);
+        }
+
+        mysql_free_result(result);
+
+        res.set_content(response.dump(), "application/json");
+    }
+
+    void handleGetNextId(const httplib::Request& req, httplib::Response& res) {
+        string query = "SELECT COALESCE(MAX(student_id), 100) + 1 AS next_id FROM students";
+
+        if (mysql_query(conn, query.c_str()) != 0) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Database query failed"})",
+                "application/json"
+            );
+            return;
+        }
+
+        MYSQL_RES* result = mysql_store_result(conn);
+        if (result == NULL) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Could not read database result"})",
+                "application/json"
+            );
+            return;
+        }
+
+        MYSQL_ROW row = mysql_fetch_row(result);
+        int nextId = 101;
+        if (row != NULL && row[0] != NULL) {
+            try {
+                nextId = stoi(row[0]);
+            } catch (...) {
+                nextId = 101;
+            }
+        }
+        mysql_free_result(result);
+
+        json resp;
+        resp["success"] = true;
+        resp["next_id"] = nextId;
+        res.set_content(resp.dump(), "application/json");
+    }
+
+    void handleCreateStudent(const httplib::Request& req, httplib::Response& res) {
+        try {
+            json data = json::parse(req.body);
+
+            int studentId = 0;
+            if (data.contains("student_id")) {
+                if (data["student_id"].is_number()) {
+                    studentId = data["student_id"].get<int>();
+                } else if (data["student_id"].is_string()) {
+                    string sidStr = data["student_id"].get<string>();
+                    if (!sidStr.empty()) {
+                        try {
+                            studentId = stoi(sidStr);
+                        } catch (...) {
+                            studentId = 0;
+                        }
+                    }
+                }
+            }
+
+            string name = data.value("name", "");
+            string email = data.value("email", "");
+            string department = data.value("department", "");
+            string phone = data.value("phone", "");
+            string password = data.value("password", "student123");
+            if (password.empty()) {
+                password = "student123";
+            }
+
+            // Trim whitespace
+            auto trim = [](string& s) {
+                while (!s.empty() && isspace(s.front())) s.erase(s.begin());
+                while (!s.empty() && isspace(s.back())) s.pop_back();
+            };
+            trim(name);
+            trim(email);
+            trim(department);
+            trim(phone);
+            trim(password);
+
+            if (name.empty()) {
+                res.status = 400;
+                res.set_content(
+                    R"({"success":false,"message":"Student full name is required."})",
+                    "application/json"
+                );
+                return;
+            }
+
+            if (email.empty() || email.find('@') == string::npos) {
+                res.status = 400;
+                res.set_content(
+                    R"({"success":false,"message":"A valid email address is required."})",
+                    "application/json"
+                );
+                return;
+            }
+
+            // Auto-assign next student ID if not provided
+            if (studentId <= 0) {
+                string nextIdQuery = "SELECT COALESCE(MAX(student_id), 100) + 1 FROM students";
+                if (mysql_query(conn, nextIdQuery.c_str()) == 0) {
+                    MYSQL_RES* nextRes = mysql_store_result(conn);
+                    if (nextRes != NULL) {
+                        MYSQL_ROW row = mysql_fetch_row(nextRes);
+                        if (row != NULL && row[0] != NULL) {
+                            try {
+                                studentId = stoi(row[0]);
+                            } catch (...) {
+                                studentId = 101;
+                            }
+                        } else {
+                            studentId = 101;
+                        }
+                        mysql_free_result(nextRes);
+                    }
+                }
+            }
+
+            // Check if student_id already exists
+            string checkIdQuery = "SELECT student_id FROM students WHERE student_id = " + to_string(studentId);
+            if (mysql_query(conn, checkIdQuery.c_str()) == 0) {
+                MYSQL_RES* resId = mysql_store_result(conn);
+                if (resId != NULL) {
+                    my_ulonglong count = mysql_num_rows(resId);
+                    mysql_free_result(resId);
+                    if (count > 0) {
+                        res.status = 409;
+                        res.set_content(
+                            R"({"success":false,"message":"Student ID already exists. Please choose a different ID."})",
+                            "application/json"
+                        );
+                        return;
+                    }
+                }
+            }
+
+            // Check if email already exists
+            char escEmailCheck[205];
+            mysql_real_escape_string(conn, escEmailCheck, email.c_str(), min((int)email.length(), 100));
+            string checkEmailQuery = "SELECT student_id FROM students WHERE email = '" + string(escEmailCheck) + "'";
+            if (mysql_query(conn, checkEmailQuery.c_str()) == 0) {
+                MYSQL_RES* resEmail = mysql_store_result(conn);
+                if (resEmail != NULL) {
+                    my_ulonglong count = mysql_num_rows(resEmail);
+                    mysql_free_result(resEmail);
+                    if (count > 0) {
+                        res.status = 409;
+                        res.set_content(
+                            R"({"success":false,"message":"A student with this email address is already registered."})",
+                            "application/json"
+                        );
+                        return;
+                    }
+                }
+            }
+
+            // Use Student class createStudent method
+            string errMsg;
+            bool ok = Student::createStudent(conn, studentId, name, email, department, phone, password, errMsg);
+
+            if (!ok) {
+                cout << "Error inserting student: " << errMsg << endl;
+                res.status = 500;
+                res.set_content(
+                    R"({"success":false,"message":"Failed to save student in database."})",
+                    "application/json"
+                );
+                return;
+            }
+
+            cout << "Successfully created new student #" << studentId << " (" << name << ")" << endl;
+
+            json resp;
+            resp["success"] = true;
+            resp["message"] = "Student account created successfully!";
+            resp["student"] = {
+                {"student_id", studentId},
+                {"name", name},
+                {"email", email},
+                {"department", department},
+                {"phone", phone}
+            };
+
+            res.status = 201;
+            res.set_content(resp.dump(), "application/json");
+
+        } catch (const exception& e) {
+            cout << "Create student exception: " << e.what() << endl;
+            res.status = 400;
+            res.set_content(
+                R"({"success":false,"message":"Invalid request data format."})",
+                "application/json"
+            );
+        }
+    }
+};
+
+class ComplaintAPI {
+private:
+    MYSQL* conn;
+public:
+    ComplaintAPI(MYSQL* c) : conn(c) {}
+
+    void handleCreateComplaint(const httplib::Request& req, httplib::Response& res) {
         try {
             json data = json::parse(req.body);
 
@@ -287,166 +506,117 @@ if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
                 "application/json"
             );
         }
-    });
-
-    server.Get(R"(/api/complaints/(\d+))",
-    [&](const httplib::Request& req, httplib::Response& res) {
-
-    string studentId = req.matches[1];
-
-    string query =
-        "SELECT complaint_id, description, status, created_at "
-        "FROM complaints WHERE student_id = " + studentId +
-        " ORDER BY complaint_id DESC";
-
-    if (mysql_query(conn, query.c_str()) != 0) {
-        res.status = 500;
-        res.set_content(
-            R"({"success":false,"message":"Database query failed"})",
-            "application/json"
-        );
-        return;
     }
 
-    MYSQL_RES* result = mysql_store_result(conn);
+    void handleGetStudentComplaints(const httplib::Request& req, httplib::Response& res) {
+        string studentId = req.matches[1];
 
-    if (result == NULL) {
-        res.status = 500;
-        res.set_content(
-            R"({"success":false,"message":"Could not read database result"})",
-            "application/json"
-        );
-        return;
-    }
+        string query =
+            "SELECT complaint_id, description, status, created_at "
+            "FROM complaints WHERE student_id = " + studentId +
+            " ORDER BY complaint_id DESC";
 
-    json complaints = json::array();
-    MYSQL_ROW row;
+        if (mysql_query(conn, query.c_str()) != 0) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Database query failed"})",
+                "application/json"
+            );
+            return;
+        }
 
-    while ((row = mysql_fetch_row(result)) != NULL) {
-        json complaint;
-        complaint["complaint_id"] = row[0] ? row[0] : "";
-        complaint["description"] = row[1] ? row[1] : "";
-        complaint["status"] = row[2] ? row[2] : "";
-        complaint["created_at"] = row[3] ? row[3] : "";
+        MYSQL_RES* result = mysql_store_result(conn);
 
-        complaints.push_back(complaint);
-    }
+        if (result == NULL) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Could not read database result"})",
+                "application/json"
+            );
+            return;
+        }
 
-    mysql_free_result(result);
+        json complaints = json::array();
+        MYSQL_ROW row;
 
-    json response;
-    response["success"] = true;
-    response["complaints"] = complaints;
+        while ((row = mysql_fetch_row(result)) != NULL) {
+            json complaint;
+            complaint["complaint_id"] = row[0] ? row[0] : "";
+            complaint["description"] = row[1] ? row[1] : "";
+            complaint["status"] = row[2] ? row[2] : "";
+            complaint["created_at"] = row[3] ? row[3] : "";
 
-    res.set_content(response.dump(), "application/json");
-});
+            complaints.push_back(complaint);
+        }
 
-server.Get("/api/admin/dashboard",
-    [&](const httplib::Request& req, httplib::Response& res) {
+        mysql_free_result(result);
 
-    json response;
+        json response;
+        response["success"] = true;
+        response["complaints"] = complaints;
 
-    string query =
-        "SELECT "
-        "(SELECT COUNT(*) FROM students), "
-        "(SELECT COUNT(*) FROM rooms), "
-        "(SELECT COUNT(*) FROM allocations), "
-        "(SELECT COUNT(*) FROM complaints WHERE status <> 'Resolved')";
-
-    if (mysql_query(conn, query.c_str()) != 0) {
-        res.status = 500;
-        response["success"] = false;
-        response["message"] = mysql_error(conn);
         res.set_content(response.dump(), "application/json");
-        return;
     }
 
-    MYSQL_RES* result = mysql_store_result(conn);
+    void handleGetAllComplaints(const httplib::Request& req, httplib::Response& res) {
+        string query =
+            "SELECT complaint_id, student_id, description, status, created_at "
+            "FROM complaints ORDER BY complaint_id DESC";
 
-    if (result == NULL) {
-        res.status = 500;
-        response["success"] = false;
-        response["message"] = mysql_error(conn);
+        if (mysql_query(conn, query.c_str()) != 0) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Database query failed"})",
+                "application/json"
+            );
+            return;
+        }
+
+        MYSQL_RES* result = mysql_store_result(conn);
+
+        if (result == NULL) {
+            res.status = 500;
+            res.set_content(
+                R"({"success":false,"message":"Could not read database result"})",
+                "application/json"
+            );
+            return;
+        }
+
+        json complaints = json::array();
+        MYSQL_ROW row;
+
+        while ((row = mysql_fetch_row(result)) != NULL) {
+            json complaint;
+            complaint["complaint_id"] = row[0] ? row[0] : "";
+            complaint["student_id"] = row[1] ? row[1] : "";
+            complaint["description"] = row[2] ? row[2] : "";
+            complaint["status"] = row[3] ? row[3] : "";
+            complaint["created_at"] = row[4] ? row[4] : "";
+
+            complaints.push_back(complaint);
+        }
+
+        mysql_free_result(result);
+
+        json response;
+        response["success"] = true;
+        response["complaints"] = complaints;
+
         res.set_content(response.dump(), "application/json");
-        return;
     }
 
-    MYSQL_ROW row = mysql_fetch_row(result);
+    void handleUpdateComplaintStatus(const httplib::Request& req, httplib::Response& res) {
+        json response;
 
-    response["success"] = true;
-    response["students"] = row[0] ? stoi(row[0]) : 0;
-    response["totalRooms"] = row[1] ? stoi(row[1]) : 0;
-    response["occupiedRooms"] = row[2] ? stoi(row[2]) : 0;
-    response["unresolvedComplaints"] = row[3] ? stoi(row[3]) : 0;
+        try {
+            json body = json::parse(req.body);
 
-    mysql_free_result(result);
+            string complaintId = req.matches[1].str();
+            string status = body.at("status").get<string>();
 
-    res.set_content(response.dump(), "application/json");
-});
-server.Get("/api/complaints",
-    [&](const httplib::Request& req, httplib::Response& res) {
-
-    string query =
-        "SELECT complaint_id, student_id, description, status, created_at "
-        "FROM complaints ORDER BY complaint_id DESC";
-
-    if (mysql_query(conn, query.c_str()) != 0) {
-        res.status = 500;
-        res.set_content(
-            R"({"success":false,"message":"Database query failed"})",
-            "application/json"
-        );
-        return;
-    }
-
-    MYSQL_RES* result = mysql_store_result(conn);
-
-    if (result == NULL) {
-        res.status = 500;
-        res.set_content(
-            R"({"success":false,"message":"Could not read database result"})",
-            "application/json"
-        );
-        return;
-    }
-
-    json complaints = json::array();
-    MYSQL_ROW row;
-
-    while ((row = mysql_fetch_row(result)) != NULL) {
-        json complaint;
-        complaint["complaint_id"] = row[0] ? row[0] : "";
-        complaint["student_id"] = row[1] ? row[1] : "";
-        complaint["description"] = row[2] ? row[2] : "";
-        complaint["status"] = row[3] ? row[3] : "";
-        complaint["created_at"] = row[4] ? row[4] : "";
-
-        complaints.push_back(complaint);
-    }
-
-    mysql_free_result(result);
-
-    json response;
-    response["success"] = true;
-    response["complaints"] = complaints;
-
-    res.set_content(response.dump(), "application/json");
-});
-
-
-server.Put(R"(/api/complaints/(\d+))",
-    [&](const httplib::Request& req, httplib::Response& res) {
-
-    json response;
-
-    try {
-        json body = json::parse(req.body);
-
-        string complaintId = req.matches[1].str();
-        string status = body.at("status").get<string>();
-
-        if (status != "Pending" && status != "In Progress" &&
-            status != "Resolved") {
+            if (status != "Pending" && status != "In Progress" &&
+                status != "Resolved") {
             res.status = 400;
             response["success"] = false;
             response["message"] = "Invalid complaint status";
@@ -485,11 +655,64 @@ server.Put(R"(/api/complaints/(\d+))",
         response["message"] = "Invalid request";
         res.set_content(response.dump(), "application/json");
     }
-});
+}
+};
 
+class DashboardAPI {
+private:
+    MYSQL* conn;
+public:
+    DashboardAPI(MYSQL* c) : conn(c) {}
 
-server.Get("/api/rooms",
-    [&](const httplib::Request& req, httplib::Response& res) {
+    void handleGetDashboard(const httplib::Request& req, httplib::Response& res) {
+        json response;
+
+        string query =
+            "SELECT "
+            "(SELECT COUNT(*) FROM students), "
+            "(SELECT COUNT(*) FROM rooms), "
+            "(SELECT COUNT(*) FROM allocations), "
+            "(SELECT COUNT(*) FROM complaints WHERE status <> 'Resolved')";
+
+        if (mysql_query(conn, query.c_str()) != 0) {
+            res.status = 500;
+            response["success"] = false;
+            response["message"] = mysql_error(conn);
+            res.set_content(response.dump(), "application/json");
+            return;
+        }
+
+        MYSQL_RES* result = mysql_store_result(conn);
+
+        if (result == NULL) {
+            res.status = 500;
+            response["success"] = false;
+            response["message"] = mysql_error(conn);
+            res.set_content(response.dump(), "application/json");
+            return;
+        }
+
+        MYSQL_ROW row = mysql_fetch_row(result);
+
+        response["success"] = true;
+        response["students"] = row[0] ? stoi(row[0]) : 0;
+        response["totalRooms"] = row[1] ? stoi(row[1]) : 0;
+        response["occupiedRooms"] = row[2] ? stoi(row[2]) : 0;
+        response["unresolvedComplaints"] = row[3] ? stoi(row[3]) : 0;
+
+        mysql_free_result(result);
+
+        res.set_content(response.dump(), "application/json");
+    }
+};
+
+class RoomAPI {
+private:
+    MYSQL* conn;
+public:
+    RoomAPI(MYSQL* c) : conn(c) {}
+
+    void handleGetRooms(const httplib::Request& req, httplib::Response& res) {
         json response;
         json rooms = json::array();
 
@@ -542,11 +765,16 @@ server.Get("/api/rooms",
         response["rooms"] = rooms;
 
         res.set_content(response.dump(), "application/json");
-    });
+    }
+};
 
+class AllocationAPI {
+private:
+    MYSQL* conn;
+public:
+    AllocationAPI(MYSQL* c) : conn(c) {}
 
-    server.Get("/api/allocations",
-    [&](const httplib::Request& req, httplib::Response& res) {
+    void handleGetAllocations(const httplib::Request& req, httplib::Response& res) {
         MYSQL* conn = mysql_init(NULL);
 
         const char* dbHost = getenv("HOSTEL_DB_HOST");
@@ -609,10 +837,9 @@ server.Get("/api/rooms",
         response["allocations"] = allocations;
 
         res.set_content(response.dump(), "application/json");
-    });
+    }
 
-    server.Put("/api/allocations/(\\d+)/deallocate",
-    [&](const httplib::Request& req, httplib::Response& res) {
+    void handleDeallocate(const httplib::Request& req, httplib::Response& res) {
         MYSQL* conn = mysql_init(NULL);
 
         const char* dbHost = getenv("HOSTEL_DB_HOST");
@@ -693,10 +920,9 @@ server.Get("/api/rooms",
         res.set_content(
             R"({"success":true,"message":"Room deallocated successfully"})",
             "application/json");
-    });
+    }
 
-server.Post("/api/allocations",
-    [&](const httplib::Request& req, httplib::Response& res) {
+    void handleCreateAllocation(const httplib::Request& req, httplib::Response& res) {
         json data;
 
         try {
@@ -968,264 +1194,151 @@ server.Post("/api/allocations",
         res.set_content(
             R"({"success":true,"message":"Room allocated successfully"})",
             "application/json");
-    });
+    }
+};
 
+// ============================================================================
+// MAIN ENTRY POINT
+// ============================================================================
+int main() {
     
-server.Get("/api/admin/students",
-    [&](const httplib::Request& req, httplib::Response& res) {
+const char* dbHost = getenv("HOSTEL_DB_HOST");
+const char* dbUser = getenv("HOSTEL_DB_USER");
+const char* dbPassword = getenv("HOSTEL_DB_PASSWORD");
+const char* dbName = getenv("HOSTEL_DB_NAME");
 
-        string query =
-            "SELECT student_id, name, email, department, phone "
-            "FROM students ORDER BY student_id";
+if (dbHost == NULL || dbUser == NULL ||
+    dbPassword == NULL || dbName == NULL) {
+    cout << "Database environment variables are missing!\n";
+    return 1;
+}
 
-        if (mysql_query(conn, query.c_str()) != 0) {
-            res.status = 500;
-            res.set_content(
-                R"({"success":false,"message":"Database query failed"})",
-                "application/json"
-            );
-            return;
-        }
+MYSQL* conn = mysql_init(NULL);
 
-        MYSQL_RES* result = mysql_store_result(conn);
+if (conn == NULL) {
+    cout << "MySQL initialization failed\n";
+    return 1;
+}
 
-        if (result == NULL) {
-            res.status = 500;
-            res.set_content(
-                R"({"success":false,"message":"Could not read database result"})",
-                "application/json"
-            );
-            return;
-        }
+if (mysql_real_connect(conn, dbHost, dbUser, dbPassword,
+                       dbName, 3306, NULL, 0) == NULL) {
+    cout << "Database connection failed: "
+         << mysql_error(conn) << endl;
+    mysql_close(conn);
+    return 1;
+}
 
-        json response;
-        response["success"] = true;
-        response["students"] = json::array();
 
-        MYSQL_ROW row;
+    httplib::Server server;
 
-        while ((row = mysql_fetch_row(result)) != NULL) {
-            json student;
-
-            student["student_id"] = row[0] ? row[0] : "";
-            student["name"] = row[1] ? row[1] : "";
-            student["email"] = row[2] ? row[2] : "";
-            student["department"] = row[3] ? row[3] : "";
-            student["phone"] = row[4] ? row[4] : "";
-
-            response["students"].push_back(student);
-        }
-
-        mysql_free_result(result);
-
-        res.set_content(response.dump(), "application/json");
+    server.set_default_headers({
+        {"Access-Control-Allow-Origin", "*"},
+        {"Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"},
+        {"Access-Control-Allow-Headers", "Content-Type"}
     });
 
-    // Endpoint: Get next suggested Student ID
+    server.Options(R"(.*)", [](const httplib::Request& req,
+                               httplib::Response& res) {
+        res.status = 200;
+    });
+
+    // Initialize API Class Objects (OOP Pattern)
+    LoginAPI loginApi(conn);
+    StudentAPI studentApi(conn);
+    ComplaintAPI complaintApi(conn);
+    DashboardAPI dashboardApi(conn);
+    RoomAPI roomApi(conn);
+    AllocationAPI allocationApi(conn);
+
+    // 1. Login API Endpoint
+    server.Post("/api/login",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            loginApi.handleLogin(req, res);
+        });
+
+    // 2. Student Profile API Endpoint
+    server.Get(R"(/api/students/(\d+))",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            studentApi.handleGetStudentById(req, res);
+        });
+
+    // 3. Complaint Submission API Endpoint
+    server.Post("/api/complaints",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            complaintApi.handleCreateComplaint(req, res);
+        });
+
+    // 4. Student Complaints History API Endpoint
+    server.Get(R"(/api/complaints/(\d+))",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            complaintApi.handleGetStudentComplaints(req, res);
+        });
+
+    // 5. Admin Dashboard Metrics API Endpoint
+    server.Get("/api/admin/dashboard",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            dashboardApi.handleGetDashboard(req, res);
+        });
+
+    // 6. Admin All Complaints API Endpoint
+    server.Get("/api/complaints",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            complaintApi.handleGetAllComplaints(req, res);
+        });
+
+    // 7. Update Complaint Status API Endpoint
+    server.Put(R"(/api/complaints/(\d+))",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            complaintApi.handleUpdateComplaintStatus(req, res);
+        });
+
+    // 8. Rooms List & Occupancy API Endpoint
+    server.Get("/api/rooms",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            roomApi.handleGetRooms(req, res);
+        });
+
+    // 9. Allocations List API Endpoint
+    server.Get("/api/allocations",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            allocationApi.handleGetAllocations(req, res);
+        });
+
+    // 10. Deallocate Room API Endpoint
+    server.Put("/api/allocations/(\\d+)/deallocate",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            allocationApi.handleDeallocate(req, res);
+        });
+
+    // 11. Create Allocation API Endpoint
+    server.Post("/api/allocations",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            allocationApi.handleCreateAllocation(req, res);
+        });
+
+    // 12. Admin All Students API Endpoint
+    server.Get("/api/admin/students",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            studentApi.handleGetAllStudents(req, res);
+        });
+
+    // 13. Get Next Student ID API Endpoint
     server.Get("/api/students/next-id",
         [&](const httplib::Request& req, httplib::Response& res) {
+            studentApi.handleGetNextId(req, res);
+        });
 
-        string query = "SELECT COALESCE(MAX(student_id), 100) + 1 AS next_id FROM students";
+    // 14. Register Student API Endpoints
+    server.Post("/api/students",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            studentApi.handleCreateStudent(req, res);
+        });
 
-        if (mysql_query(conn, query.c_str()) != 0) {
-            res.status = 500;
-            res.set_content(
-                R"({"success":false,"message":"Database query failed"})",
-                "application/json"
-            );
-            return;
-        }
-
-        MYSQL_RES* result = mysql_store_result(conn);
-        if (result == NULL) {
-            res.status = 500;
-            res.set_content(
-                R"({"success":false,"message":"Could not read database result"})",
-                "application/json"
-            );
-            return;
-        }
-
-        MYSQL_ROW row = mysql_fetch_row(result);
-        int nextId = 101;
-        if (row != NULL && row[0] != NULL) {
-            try {
-                nextId = stoi(row[0]);
-            } catch (...) {
-                nextId = 101;
-            }
-        }
-        mysql_free_result(result);
-
-        json resp;
-        resp["success"] = true;
-        resp["next_id"] = nextId;
-        res.set_content(resp.dump(), "application/json");
-    });
-
-    // Endpoint: Add / Register a new Student account
-    auto handleCreateStudent = [&](const httplib::Request& req, httplib::Response& res) {
-        try {
-            json data = json::parse(req.body);
-
-            int studentId = 0;
-            if (data.contains("student_id")) {
-                if (data["student_id"].is_number()) {
-                    studentId = data["student_id"].get<int>();
-                } else if (data["student_id"].is_string()) {
-                    string sidStr = data["student_id"].get<string>();
-                    if (!sidStr.empty()) {
-                        try {
-                            studentId = stoi(sidStr);
-                        } catch (...) {
-                            studentId = 0;
-                        }
-                    }
-                }
-            }
-
-            string name = data.value("name", "");
-            string email = data.value("email", "");
-            string department = data.value("department", "");
-            string phone = data.value("phone", "");
-            string password = data.value("password", "student123");
-            if (password.empty()) {
-                password = "student123";
-            }
-
-            // Trim whitespace
-            auto trim = [](string& s) {
-                while (!s.empty() && isspace(s.front())) s.erase(s.begin());
-                while (!s.empty() && isspace(s.back())) s.pop_back();
-            };
-            trim(name);
-            trim(email);
-            trim(department);
-            trim(phone);
-            trim(password);
-
-            if (name.empty()) {
-                res.status = 400;
-                res.set_content(
-                    R"({"success":false,"message":"Student full name is required."})",
-                    "application/json"
-                );
-                return;
-            }
-
-            if (email.empty() || email.find('@') == string::npos) {
-                res.status = 400;
-                res.set_content(
-                    R"({"success":false,"message":"A valid email address is required."})",
-                    "application/json"
-                );
-                return;
-            }
-
-            // Auto-assign next student ID if not provided
-            if (studentId <= 0) {
-                string nextIdQuery = "SELECT COALESCE(MAX(student_id), 100) + 1 FROM students";
-                if (mysql_query(conn, nextIdQuery.c_str()) == 0) {
-                    MYSQL_RES* nextRes = mysql_store_result(conn);
-                    if (nextRes != NULL) {
-                        MYSQL_ROW row = mysql_fetch_row(nextRes);
-                        if (row != NULL && row[0] != NULL) {
-                            try {
-                                studentId = stoi(row[0]);
-                            } catch (...) {
-                                studentId = 101;
-                            }
-                        } else {
-                            studentId = 101;
-                        }
-                        mysql_free_result(nextRes);
-                    }
-                }
-            }
-
-            // Check if student_id already exists
-            string checkIdQuery = "SELECT student_id FROM students WHERE student_id = " + to_string(studentId);
-            if (mysql_query(conn, checkIdQuery.c_str()) == 0) {
-                MYSQL_RES* resId = mysql_store_result(conn);
-                if (resId != NULL) {
-                    my_ulonglong count = mysql_num_rows(resId);
-                    mysql_free_result(resId);
-                    if (count > 0) {
-                        res.status = 409;
-                        res.set_content(
-                            R"({"success":false,"message":"Student ID already exists. Please choose a different ID."})",
-                            "application/json"
-                        );
-                        return;
-                    }
-                }
-            }
-
-            // Check if email already exists
-            char escEmailCheck[205];
-            mysql_real_escape_string(conn, escEmailCheck, email.c_str(), min((int)email.length(), 100));
-            string checkEmailQuery = "SELECT student_id FROM students WHERE email = '" + string(escEmailCheck) + "'";
-            if (mysql_query(conn, checkEmailQuery.c_str()) == 0) {
-                MYSQL_RES* resEmail = mysql_store_result(conn);
-                if (resEmail != NULL) {
-                    my_ulonglong count = mysql_num_rows(resEmail);
-                    mysql_free_result(resEmail);
-                    if (count > 0) {
-                        res.status = 409;
-                        res.set_content(
-                            R"({"success":false,"message":"A student with this email address is already registered."})",
-                            "application/json"
-                        );
-                        return;
-                    }
-                }
-            }
-
-            // Use Student class createStudent method
-            string errMsg;
-            bool ok = Student::createStudent(conn, studentId, name, email, department, phone, password, errMsg);
-
-            if (!ok) {
-                cout << "Error inserting student: " << errMsg << endl;
-                res.status = 500;
-                res.set_content(
-                    R"({"success":false,"message":"Failed to save student in database."})",
-                    "application/json"
-                );
-                return;
-            }
-
-            cout << "Successfully created new student #" << studentId << " (" << name << ")" << endl;
-
-            json resp;
-            resp["success"] = true;
-            resp["message"] = "Student account created successfully!";
-            resp["student"] = {
-                {"student_id", studentId},
-                {"name", name},
-                {"email", email},
-                {"department", department},
-                {"phone", phone}
-            };
-
-            res.status = 201;
-            res.set_content(resp.dump(), "application/json");
-
-        } catch (const exception& e) {
-            cout << "Create student exception: " << e.what() << endl;
-            res.status = 400;
-            res.set_content(
-                R"({"success":false,"message":"Invalid request data format."})",
-                "application/json"
-            );
-        }
-    };
-
-    server.Post("/api/students", handleCreateStudent);
-    server.Post("/api/admin/students", handleCreateStudent);
-
-
-
+    server.Post("/api/admin/students",
+        [&](const httplib::Request& req, httplib::Response& res) {
+            studentApi.handleCreateStudent(req, res);
+        });
+                                                                                                                                                            
     cout << "Server started on port 8080...\n";
 
     server.listen("0.0.0.0", 8080);
