@@ -212,7 +212,7 @@ flowchart TD
         ValidateStatus -- No --> RejectStatus[Return HTTP 400 Invalid Status]
         
         ValidateStatus -- Yes --> UpdateDB["UPDATE complaints SET status = :status WHERE complaint_id = :id"]
-        UpdateDB --> Triage200[Return HTTP 200 {success: true}]
+        UpdateDB --> Triage200["Return HTTP 200 {success: true}"]
         Triage200 --> UpdateBadge[Admin UI updates status badge color & counter]
         UpdateBadge --> NotificationSync([Status updated across Student & Admin views])
     end
