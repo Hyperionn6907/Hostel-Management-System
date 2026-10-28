@@ -3,9 +3,8 @@
 [![C++](https://img.shields.io/badge/C++-17-00599C?logo=c%2B%2B&logoColor=white)](https://isocpp.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![REST API](https://img.shields.io/badge/Architecture-REST%20API-009688)](#-system-architecture)
-[![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%7C%20CSS3%20%7C%20ES6+-E34F26?logo=html5&logoColor=white)](#-tech-stack)
+[![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%7C%20CSS3-E34F26?logo=html5&logoColor=white)](#-tech-stack)
 [![OOP](https://img.shields.io/badge/Design-Object--Oriented-blueviolet)](#-object-oriented-design--oop-principles)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > A full-stack, object-oriented **Hostel Management System** featuring a high-performance **C++ REST API backend**, a relational **MySQL** database, and a responsive **web presentation portal** for students and hostel administrators.
 
@@ -148,7 +147,7 @@ This system exemplifies core Object-Oriented Programming principles:
 ### Frontend
 - **HTML5:** Semantic, accessible markup.
 - **CSS3:** Custom design system (`tokens.css`, `style.css`, `student.css`) featuring modern typography, glassmorphism, responsive flex/grid layouts, and dark UI palettes.
-- **JavaScript:** Native ES6+ asynchronous workflows (`fetch`, `async/await`, dynamic DOM manipulation) with zero third-party framework overhead.
+- **JavaScript:** Native asynchronous workflows (`fetch`, `async/await`, dynamic DOM manipulation) with zero third-party framework overhead.
 
 ### Database
 - **Engine:** MySQL Server 8.0+ / MariaDB.
@@ -226,6 +225,8 @@ Hostel-Management-System/
 │   └── student.css            # Student-specific component styling
 ├── architecture_diagram.md    # Multi-tier system architecture diagram
 ├── class_diagram.md           # Object-Oriented UML Class Diagram
+├── control_diagram.md         # Runtime Control Flow & Decision Logic Diagram
+├── dataflow_diagram.md        # Multi-tiered Data Flow Diagram (DFD L0, L1, L2)
 └── README.md                  # Comprehensive project documentation
 ```
 
