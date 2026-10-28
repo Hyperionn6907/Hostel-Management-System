@@ -19,12 +19,15 @@ using json = nlohmann::json;
 // OOP CLASSES FOR EACH API
 // ============================================================================
 
+// LoginAPI: checks who is logging in (admin or student).
 class LoginAPI {
 private:
     MYSQL* conn;
 public:
     LoginAPI(MYSQL* c) : conn(c) {}
 
+    // POST /api/login
+    // Checks the admins table first, then the students table (by ID or email).
     void handleLogin(const httplib::Request& req, httplib::Response& res) {
         try {
             json data = json::parse(req.body);
@@ -145,12 +148,15 @@ public:
     }
 };
 
+// StudentAPI: create, find and list students.
 class StudentAPI {
 private:
     MYSQL* conn;
 public:
     StudentAPI(MYSQL* c) : conn(c) {}
 
+    // GET /api/students/<id>
+    // Returns one student's profile.
     void handleGetStudentById(const httplib::Request& req, httplib::Response& res) {
         string id = req.matches[1];
 
@@ -202,6 +208,8 @@ public:
         mysql_free_result(result);
     }
 
+    // GET /api/admin/students
+    // Returns the list of all students (admin screen).
     void handleGetAllStudents(const httplib::Request& req, httplib::Response& res) {
         string query =
             "SELECT student_id, name, email, department, phone "
@@ -250,6 +258,8 @@ public:
         res.set_content(response.dump(), "application/json");
     }
 
+    // GET /api/students/next-id
+    // Returns the next free student ID (highest ID + 1, starting at 101).
     void handleGetNextId(const httplib::Request& req, httplib::Response& res) {
         string query = "SELECT COALESCE(MAX(student_id), 100) + 1 AS next_id FROM students";
 
@@ -289,6 +299,9 @@ public:
         res.set_content(resp.dump(), "application/json");
     }
 
+    // POST /api/students and POST /api/admin/students
+    // Registers a new student: validates input, checks duplicate ID/email,
+    // then saves it using Student::createStudent (from student.cpp).
     void handleCreateStudent(const httplib::Request& req, httplib::Response& res) {
         try {
             json data = json::parse(req.body);
@@ -447,12 +460,15 @@ public:
     }
 };
 
+// ComplaintAPI: students raise complaints, admin tracks and updates them.
 class ComplaintAPI {
 private:
     MYSQL* conn;
 public:
     ComplaintAPI(MYSQL* c) : conn(c) {}
 
+    // POST /api/complaints
+    // Student submits a new complaint (1 to 500 characters). Status starts as Pending.
     void handleCreateComplaint(const httplib::Request& req, httplib::Response& res) {
         try {
             json data = json::parse(req.body);
@@ -508,6 +524,8 @@ public:
         }
     }
 
+    // GET /api/complaints/<student_id>
+    // Returns all complaints of one student (newest first).
     void handleGetStudentComplaints(const httplib::Request& req, httplib::Response& res) {
         string studentId = req.matches[1];
 
@@ -558,6 +576,8 @@ public:
         res.set_content(response.dump(), "application/json");
     }
 
+    // GET /api/complaints
+    // Admin: returns all complaints from all students.
     void handleGetAllComplaints(const httplib::Request& req, httplib::Response& res) {
         string query =
             "SELECT complaint_id, student_id, description, status, created_at "
@@ -606,6 +626,8 @@ public:
         res.set_content(response.dump(), "application/json");
     }
 
+    // PUT /api/complaints/<complaint_id>
+    // Admin: changes status to Pending, In Progress or Resolved.
     void handleUpdateComplaintStatus(const httplib::Request& req, httplib::Response& res) {
         json response;
 
@@ -658,12 +680,15 @@ public:
 }
 };
 
+// DashboardAPI: summary numbers for the admin dashboard.
 class DashboardAPI {
 private:
     MYSQL* conn;
 public:
     DashboardAPI(MYSQL* c) : conn(c) {}
 
+    // GET /api/admin/dashboard
+    // Returns total students, total rooms, allocations, and unresolved complaints.
     void handleGetDashboard(const httplib::Request& req, httplib::Response& res) {
         json response;
 
@@ -706,12 +731,15 @@ public:
     }
 };
 
+// RoomAPI: shows every room with occupied and available counts.
 class RoomAPI {
 private:
     MYSQL* conn;
 public:
     RoomAPI(MYSQL* c) : conn(c) {}
 
+    // GET /api/rooms
+    // Joins rooms with allocations to count occupied beds per room.
     void handleGetRooms(const httplib::Request& req, httplib::Response& res) {
         json response;
         json rooms = json::array();
@@ -768,12 +796,16 @@ public:
     }
 };
 
+// AllocationAPI: assigns students to rooms and ends allocations.
+// Each method opens its own database connection.
 class AllocationAPI {
 private:
     MYSQL* conn;
 public:
     AllocationAPI(MYSQL* c) : conn(c) {}
 
+    // GET /api/allocations
+    // Returns the list of all allocations.
     void handleGetAllocations(const httplib::Request& req, httplib::Response& res) {
         MYSQL* conn = mysql_init(NULL);
 
@@ -839,6 +871,8 @@ public:
         res.set_content(response.dump(), "application/json");
     }
 
+    // PUT /api/allocations/<id>/deallocate
+    // Ends an allocation by setting end_date to today (row is kept as history).
     void handleDeallocate(const httplib::Request& req, httplib::Response& res) {
         MYSQL* conn = mysql_init(NULL);
 
@@ -922,6 +956,9 @@ public:
             "application/json");
     }
 
+    // POST /api/allocations
+    // Assigns a student to a room. Checks: valid JSON, valid date, student exists,
+    // room exists, student has no active allocation, room is not full. Then inserts.
     void handleCreateAllocation(const httplib::Request& req, httplib::Response& res) {
         json data;
 
@@ -1199,6 +1236,7 @@ public:
 
 // ============================================================================
 // MAIN ENTRY POINT
+// Connects to MySQL, creates the API objects, maps URLs to them, starts server.
 // ============================================================================
 int main() {
     
