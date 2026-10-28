@@ -63,7 +63,7 @@ graph TD
 
     %% Flows from Admin
     E_Admin -->|"Admin Credentials (Username, Password)"| P_HostelOS
-    E_Admin -->|"Room Allocation Request (student_id, room_id)"| P_HostelOS
+    E_Admin -->|"Room Allocation Request (student_id, room_id, allocation_date)"| P_HostelOS
     E_Admin -->|"Checkout / Deallocation Trigger (allocation_id)"| P_HostelOS
     E_Admin -->|"New Student Registration Data"| P_HostelOS
     E_Admin -->|"Complaint Status Progression Update"| P_HostelOS
@@ -128,9 +128,11 @@ graph TB
     P2 -->|"Student Directory Roster & Next ID"| Admin
 
     %% ---------------- PROCESS 3.0 (Allocations & Rooms) ----------------
-    Admin -->|"Allocation Request (student_id, room_id)"| P3
+    Admin -->|"Allocation Request (student_id, room_id, allocation_date)"| P3
     Admin -->|"Deallocation Trigger (allocation_id)"| P3
     Admin -->|"Inspect Room Inventory"| P3
+    P3 -->|"Verify student enrollment"| D2
+    D2 -->|"Student validity status"| P3
     P3 -->|"Check active student allocation"| D4
     P3 -->|"Fetch room capacity & current occupancy"| D3
     D3 -->|"Room capacity data"| P3
@@ -174,7 +176,7 @@ graph TD
     Admin["🛡️ Admin / Warden"]
 
     %% Sub-processes
-    P31(("<b>3.1</b><br/>Verify Student<br/>Eligibility"))
+    P31(("<b>3.1</b><br/>Verify Student<br/>& Date Validity"))
     P32(("<b>3.2</b><br/>Verify Room<br/>Capacity"))
     P33(("<b>3.3</b><br/>Persist Room<br/>Allocation"))
     P34(("<b>3.4</b><br/>Terminate Allocation<br/>(Checkout)"))
@@ -186,12 +188,14 @@ graph TD
     D2[("<b>D2</b> students")]
 
     %% Flows for Allocation
-    Admin -->|"Allocation Request (student_id, room_id)"| P31
+    Admin -->|"Allocation Request (student_id, room_id, allocation_date)"| P31
+    P31 -->|"Check student exists"| D2
+    D2 -->|"Student existence confirmation"| P31
     P31 -->|"Check existing active allocation"| D4
     D4 -->|"Active allocation check result"| P31
 
-    P31 -->|"Student verified eligible (student_id, room_id)"| P32
-    P32 -->|"Fetch room capacity"| D3
+    P31 -->|"Student eligible & date valid (student_id, room_id, allocation_date)"| P32
+    P32 -->|"Fetch room existence & capacity"| D3
     D3 -->|"Capacity limit"| P32
     P32 -->|"Count active allocations for room_id"| D4
     D4 -->|"Current resident count"| P32
@@ -385,7 +389,7 @@ Records facility maintenance issues, student grievances, and resolution progress
 | **2.2** | `POST /api/students` | Admin Portal | `{"name":"...", "email":"...", "department":"...", "phone":"...", "password":"..."}` | `{"success":true, "message":"Created", "student_id":106}` | `D2` |
 | **2.4** | `GET /api/students/:id` | Student Portal | URL parameter `:id` | `{"success":true, "student":{..., "room_number":"A-101", "block":"A"}}` | `D2`, `D3`, `D4` |
 | **3.2** | `GET /api/rooms` | Admin Portal | None | `{"success":true, "rooms":[{"room_number":"A-101", "capacity":2, "occupancy":1, "status":"Available"}]}` | `D3`, `D4` |
-| **3.3** | `POST /api/allocations` | Admin Portal | `{"student_id":101, "room_id":1}` | `{"success":true, "allocation_id":4}` | `D3`, `D4` |
+| **3.3** | `POST /api/allocations` | Admin Portal | `{"student_id":101, "room_id":1, "allocation_date":"2026-10-28"}` | `{"success":true, "message":"Room allocated successfully"}` | `D2`, `D3`, `D4` |
 | **3.4** | `PUT /api/allocations/:id/deallocate`| Admin Portal | URL parameter `:id` | `{"success":true, "message":"Deallocated successfully"}` | `D4` |
 | **4.2** | `POST /api/complaints` | Student Portal | `{"student_id":101, "description":"Fan not working"}` | `{"success":true, "complaint_id":7}` | `D5` |
 | **4.3** | `GET /api/complaints/:studentId` | Student Portal | URL parameter `:studentId` | `{"success":true, "complaints":[{"id":7, "description":"...", "status":"Pending"}]}` | `D5` |

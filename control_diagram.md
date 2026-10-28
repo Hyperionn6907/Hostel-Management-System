@@ -105,36 +105,48 @@ flowchart TD
 
 ## 3. Room Allocation & Capacity Validation Flow
 
-Executes the atomic business rules for allocating a resident to a room (`POST /api/allocations`), preventing duplicate allocations and overbooking.
+Executes the atomic business rules for allocating a resident to a room (`POST /api/allocations`), enforcing student existence, date formatting, single-allocation invariant, and capacity constraints.
 
 ```mermaid
 flowchart TD
-    AllocStart([Admin selects Student and Room on admin.html]) --> SubmitAlloc["POST /api/allocations {student_id, room_id}"]
-    SubmitAlloc --> CheckParams{student_id & room_id present?}
+    AllocStart([Admin selects Student, Room & Date on admin.html]) --> SubmitAlloc["POST /api/allocations<br/>{student_id, room_id, allocation_date}"]
+    SubmitAlloc --> ParseJSON{Valid JSON Body?<br/>json::parse(req.body)}
     
-    CheckParams -- No --> Ret400[Return HTTP 400 Bad Request]
+    ParseJSON -- No --> Ret400JSON[Return HTTP 400 Bad Request<br/>{success: false, message: 'Invalid JSON'}]
     
-    CheckParams -- Yes --> QueryActiveAlloc["Query: SELECT allocation_id FROM allocations<br/>WHERE student_id = :id AND end_date IS NULL"]
+    ParseJSON -- Yes --> CheckParams{student_id, room_id &<br/>allocation_date present?}
+    
+    CheckParams -- No --> Ret400Params[Return HTTP 400 Bad Request<br/>{success: false, message: 'Missing required fields'}]
+    
+    CheckParams -- Yes --> ValidateDate{Valid date format?<br/>YYYY-MM-DD}
+    ValidateDate -- No --> Ret400Date[Return HTTP 400 Bad Request<br/>{success: false, message: 'Invalid allocation date format'}]
+    
+    ValidateDate -- Yes --> QueryStudent["Query: SELECT student_id FROM students<br/>WHERE student_id = :student_id"]
+    QueryStudent --> StudentExists{Student Exists?}
+    StudentExists -- No --> Ret404Student[Return HTTP 404 Not Found<br/>{success: false, message: 'Student not found'}]
+    
+    StudentExists -- Yes --> QueryActiveAlloc["Query: SELECT allocation_id FROM allocations<br/>WHERE student_id = :id AND end_date IS NULL"]
     
     QueryActiveAlloc --> HasActiveAlloc{Already Allocated?}
-    HasActiveAlloc -- Yes --> RetDupErr["Return HTTP 400<br/>{success: false, message: 'Student already has an active allocation'}"]
+    HasActiveAlloc -- Yes --> RetDupErr["Return HTTP 400 Bad Request<br/>{success: false, message: 'Student already has an active allocation'}"]
     RetDupErr --> ShowDupAlert["Display warning banner on Admin UI"]
     
-    HasActiveAlloc -- No --> QueryRoomCap["Query: SELECT capacity, COUNT(allocation_id) AS current_occ<br/>FROM rooms LEFT JOIN allocations ... WHERE room_id = :id"]
+    HasActiveAlloc -- No --> QueryRoom["Query: SELECT capacity FROM rooms<br/>WHERE room_id = :room_id"]
+    QueryRoom --> RoomExists{Room Exists?}
+    RoomExists -- No --> Ret404Room[Return HTTP 404 Room Not Found<br/>{success: false, message: 'Room not found'}]
     
-    QueryRoomCap --> RoomExists{Room Exists?}
-    RoomExists -- No --> Ret404[Return HTTP 404 Room Not Found]
+    RoomExists -- Yes --> QueryRoomOcc["Query: SELECT COUNT(*) AS current_occ FROM allocations<br/>WHERE room_id = :id AND end_date IS NULL"]
     
-    RoomExists -- Yes --> CheckCap{current_occ >= capacity?}
-    CheckCap -- Yes --> RetFullErr["Return HTTP 400<br/>{success: false, message: 'Room has reached maximum capacity'}"]
+    QueryRoomOcc --> CheckCap{current_occ >= capacity?}
+    CheckCap -- Yes --> RetFullErr["Return HTTP 400 Bad Request<br/>{success: false, message: 'Room has reached maximum capacity'}"]
     RetFullErr --> ShowFullAlert["Display 'Room Full' alert on Admin UI"]
     
-    CheckCap -- No --> InsertAlloc["INSERT INTO allocations (student_id, room_id, allocation_date)<br/>VALUES (:student_id, :room_id, CURDATE())"]
+    CheckCap -- No --> InsertAlloc["INSERT INTO allocations (student_id, room_id, allocation_date)<br/>VALUES (:student_id, :room_id, :allocation_date)"]
     
     InsertAlloc --> ExecInsert{Insert Success?}
     ExecInsert -- No --> Ret500[Return HTTP 500 DB Transaction Failed]
     
-    ExecInsert -- Yes --> Ret201["Return HTTP 201 Created<br/>{success: true, allocation_id: :new_id}"]
+    ExecInsert -- Yes --> Ret201["Return HTTP 201 Created<br/>{success: true, message: 'Room allocated successfully'}"]
     Ret201 --> RefreshAdmin["Client triggers reload of Room Matrix & Allocations Table"]
     RefreshAdmin --> AllocEnd([Allocation Active & Room Capacity Incremented])
 ```
@@ -185,7 +197,7 @@ flowchart TD
     subgraph ResidentFlow ["Student Grievance Submission (student.html)"]
         GrievStart([Student logs into portal]) --> OpenGrievModal[Open 'Lodge Grievance' Form]
         OpenGrievModal --> EnterDesc[Enter Complaint Category & Description]
-        EnterDesc --> ValDesc{Description Length >= 5 chars?}
+        EnterDesc --> ValDesc{Description valid?<br/>1 <= length <= 500}
         
         ValDesc -- No --> PromptDesc[Show validation warning: 'Description too short']
         PromptDesc --> EnterDesc
