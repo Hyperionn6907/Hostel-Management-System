@@ -5,6 +5,7 @@
 [![REST API](https://img.shields.io/badge/Architecture-REST%20API-009688)](#-system-architecture)
 [![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%7C%20CSS3-E34F26?logo=html5&logoColor=white)](#-tech-stack)
 [![OOP](https://img.shields.io/badge/Design-Object--Oriented-blueviolet)](#-object-oriented-design--oop-principles)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](license.txt)
 
 > A full-stack, object-oriented **Hostel Management System** featuring a high-performance **C++ REST API backend**, a relational **MySQL** database, and a responsive **web presentation portal** for students and hostel administrators.
 
@@ -32,6 +33,7 @@
 - [Default Demo Credentials](#-default-demo-credentials)
 - [Security & Engineering Practices](#-security--engineering-practices)
 - [Authors & Acknowledgments](#-authors--acknowledgments)
+- [License](#-license)
 
 ---
 
@@ -419,6 +421,12 @@ Developed as an **Object-Oriented Programming (OOPS) Mini Project**.
 
 - **Kesava Ashutosh** ([@ashutoshkesava](mailto:ashutoshkesava@gmail.com)) — Core Backend Logic, REST API Architecture & Database Integrations.
 - **Hyperionn** ([@itshyperion6907](mailto:itshyperion6907@gmail.com)) — Frontend System Architecture, Design System Tokens & UI/UX Experience.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [license.txt](license.txt) file for details.
 
 ---
 
