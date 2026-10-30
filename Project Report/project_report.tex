@@ -30,11 +30,11 @@
 % Set figure caption prefix to "Fig" as requested
 \renewcommand{\figurename}{Fig}
 
-% Section and float numbering formatted as 1.x without Chapter header
-\renewcommand{\thesection}{1.\arabic{section}}
-\renewcommand{\thefigure}{1.\arabic{figure}}
-\renewcommand{\thetable}{1.\arabic{table}}
-\renewcommand{\thelstlisting}{1.\arabic{lstlisting}}
+% Section and float numbering formatted as 2.x without Chapter header
+\renewcommand{\thesection}{2.\arabic{section}}
+\renewcommand{\thefigure}{2.\arabic{figure}}
+\renewcommand{\thetable}{2.\arabic{table}}
+\AtBeginDocument{\renewcommand{\thelstlisting}{2.\arabic{lstlisting}}}
 
 % Colors for Listings and Hyperlinks
 \definecolor{codegreen}{rgb}{0.13,0.55,0.13}
@@ -441,70 +441,98 @@ Figure~\ref{fig:architecture} presents the multi-tier architectural diagram of H
 
 \begin{figure}[htbp]
 \centering
-\resizebox{0.95\textwidth}{!}{%
+\resizebox{0.96\textwidth}{!}{%
 \begin{tikzpicture}[
-    node distance=1.2cm and 1.5cm,
     font=\sffamily,
-    tierbox/.style={draw=navyblue, fill=blue!3, rounded corners=6pt, line width=1pt, inner sep=12pt},
-    compbox/.style={draw=navyblue!80, fill=white, rounded corners=4pt, line width=0.8pt, align=center, inner sep=6pt, font=\small},
-    dbbox/.style={draw=darkcyan, fill=cyan!5, rounded corners=4pt, line width=0.8pt, align=center, inner sep=6pt, font=\small},
-    arrow/.style={-{Latex[length=3mm]}, line width=1pt, color=navyblue!90}
+    tierbox/.style={draw=navyblue, fill=blue!3, rounded corners=6pt, line width=1pt, inner xsep=18pt, inner ysep=12pt},
+    compbox/.style={draw=navyblue!80, fill=white, rounded corners=3pt, line width=0.8pt, align=center, inner sep=3pt, font=\scriptsize, text width=2.45cm},
+    apibox/.style={draw=navyblue!80, fill=white, rounded corners=3pt, line width=0.8pt, align=center, inner sep=3pt, font=\scriptsize, text width=2.45cm, minimum width=2.5cm},
+    dbbox/.style={draw=darkcyan, fill=cyan!5, rounded corners=3pt, line width=0.8pt, align=center, inner sep=3pt, font=\scriptsize, text width=2.0cm},
+    arrow/.style={-{Latex[length=2.5mm]}, line width=0.85pt, color=navyblue!90},
+    dbarrow/.style={-{Latex[length=2.5mm]}, line width=0.85pt, color=darkcyan}
 ]
 
-% Tier 1: Client Tier
-\node[compbox] (login_ui) {Login Portal\\(\texttt{login.html})};
-\node[compbox, right=0.8cm of login_ui] (student_ui) {Student Dashboard\\(\texttt{student.html})};
-\node[compbox, right=0.8cm of student_ui] (admin_ui) {Admin Dashboard\\(\texttt{admin.html})};
-\node[compbox, right=0.8cm of admin_ui] (reg_ui) {Student Registration\\(\texttt{add-student.html})};
+% ==================== Tier 1: Client Presentation Tier ====================
+\coordinate (t1_west) at (-9.5, 0);
+\coordinate (t1_east) at (9.5, 0);
+
+\node[compbox] (login_ui)   at (-6.6, 0) {Login Portal\\(\texttt{login.html})};
+\node[compbox] (student_ui) at (-2.2, 0) {Student Dashboard\\(\texttt{student.html})};
+\node[compbox] (admin_ui)   at (2.2, 0)  {Admin Dashboard\\(\texttt{admin.html})};
+\node[compbox] (reg_ui)     at (6.6, 0)  {Registration\\(\texttt{add-student.html})};
 
 \begin{scope}[on background layer]
-    \node[tierbox, fit=(login_ui) (student_ui) (admin_ui) (reg_ui), label={[anchor=north west, font=\bfseries\color{navyblue}]north west:Client Presentation Tier (Browser - HTML5 / CSS3 / ES6+ Fetch)}] (tier1) {};
+    \node[tierbox, fit=(login_ui) (reg_ui) (t1_west) (t1_east)] (tier1) {};
 \end{scope}
+\node[anchor=south west, font=\bfseries\color{navyblue}, yshift=4pt] at (tier1.north west) {Client Presentation Tier (Browser - HTML5 / CSS3 / ES6+ Fetch)};
 
-% Tier 2: Backend C++ Tier
-\node[compbox, below=1.8cm of tier1, xshift=1cm] (router) {\textbf{HTTP Router \& CORS Middleware}\\(\texttt{httplib::Server} on Port 8080)};
-\node[compbox, below=1.2cm of router, xshift=-4cm] (api_login) {\textbf{LoginAPI}};
-\node[compbox, right=0.5cm of api_login] (api_student) {\textbf{StudentAPI}};
-\node[compbox, right=0.5cm of api_student] (api_room) {\textbf{RoomAPI}};
-\node[compbox, right=0.5cm of api_room] (api_alloc) {\textbf{AllocationAPI}};
-\node[compbox, right=0.5cm of api_alloc] (api_comp) {\textbf{ComplaintAPI}};
-\node[compbox, right=0.5cm of api_comp] (api_dash) {\textbf{DashboardAPI}};
+% ==================== Request Arrow (Tier 1 to Tier 2) ====================
+\node[compbox, font=\scriptsize, text width=5.2cm] (router) at (0, -3.0) {\textbf{HTTP Router \& CORS Middleware}\\(\texttt{httplib::Server} on Port 8080)};
+\draw[arrow] (0, -0.6) -- (router.north) node[midway, fill=blue!3, inner sep=2pt, font=\tiny\bfseries\color{navyblue}] {Async JSON / HTTP Requests};
 
-\node[compbox, below=1.0cm of api_student, xshift=1.5cm] (entity_student) {\textbf{Student Domain Entity}\\(\texttt{student.cpp})};
-\node[compbox, right=1.2cm of entity_student] (json_engine) {\textbf{JSON Engine}\\(\texttt{nlohmann::json})};
+% ==================== Tier 2: Backend C++ Application Tier ====================
+\coordinate (t2_west) at (-9.5, -5.0);
+\coordinate (t2_east) at (9.5, -5.0);
 
-\begin{scope}[on background layer]
-    \node[tierbox, fit=(router) (api_login) (api_dash) (entity_student) (json_engine), label={[anchor=north west, font=\bfseries\color{navyblue}]north west:Application Tier (C++ REST API Server - Port 8080)}] (tier2) {};
-\end{scope}
+% 6 Controllers with generous width (2.5cm) spaced evenly at x = -7.5, -4.5, -1.5, 1.5, 4.5, 7.5
+\node[apibox] (api_login)   at (-7.5, -5.0) {\textbf{LoginAPI}};
+\node[apibox] (api_student) at (-4.5, -5.0) {\textbf{StudentAPI}};
+\node[apibox] (api_room)    at (-1.5, -5.0) {\textbf{RoomAPI}};
+\node[apibox] (api_alloc)   at (1.5, -5.0)  {\textbf{AllocationAPI}};
+\node[apibox] (api_comp)    at (4.5, -5.0)  {\textbf{ComplaintAPI}};
+\node[apibox] (api_dash)    at (7.5, -5.0)  {\textbf{DashboardAPI}};
 
-% Tier 3: Database Tier
-\node[dbbox, below=1.8cm of entity_student, xshift=-2.5cm] (tb_stud) {\textbf{students}\\(student\_id PK, ...)};
-\node[dbbox, right=0.6cm of tb_stud] (tb_room) {\textbf{rooms}\\(room\_id PK, ...)};
-\node[dbbox, right=0.6cm of tb_room] (tb_alloc) {\textbf{allocations}\\(allocation\_id PK, ...)};
-\node[dbbox, right=0.6cm of tb_alloc] (tb_comp) {\textbf{complaints}\\(complaint\_id PK, ...)};
-\node[dbbox, right=0.6cm of tb_comp] (tb_admin) {\textbf{admins}\\(admin\_id PK, ...)};
+% Orthogonal Router Bus
+\draw[line width=0.85pt, color=navyblue!80] (router.south) -- (0, -4.1);
+\draw[line width=0.85pt, color=navyblue!80] (-7.5, -4.1) -- (7.5, -4.1);
+\draw[arrow] (-7.5, -4.1) -- (api_login.north);
+\draw[arrow] (-4.5, -4.1) -- (api_student.north);
+\draw[arrow] (-1.5, -4.1) -- (api_room.north);
+\draw[arrow] (1.5, -4.1)  -- (api_alloc.north);
+\draw[arrow] (4.5, -4.1)  -- (api_comp.north);
+\draw[arrow] (7.5, -4.1)  -- (api_dash.north);
 
-\begin{scope}[on background layer]
-    \node[tierbox, fit=(tb_stud) (tb_admin), draw=darkcyan, fill=teal!3, label={[anchor=north west, font=\bfseries\color{darkcyan}]north west:Data Persistence Tier (MySQL \texttt{hostel\_management} DB)}] (tier3) {};
-\end{scope}
-
-% Connectors
-\draw[arrow] (tier1.south) -- (router.north) node[midway, right, font=\footnotesize] {Async JSON / HTTP Requests};
-\draw[arrow] (router.south) -- (api_login.north);
-\draw[arrow] (router.south) -- (api_student.north);
-\draw[arrow] (router.south) -- (api_room.north);
-\draw[arrow] (router.south) -- (api_alloc.north);
-\draw[arrow] (router.south) -- (api_comp.north);
-\draw[arrow] (router.south) -- (api_dash.north);
+% Internal Tier 2 Domain Entities
+\node[compbox, text width=2.45cm] (entity_student) at (-4.5, -6.6) {\textbf{Student Entity}\\(\texttt{student.cpp})};
+\node[compbox, text width=2.45cm] (json_engine)    at (1.5, -6.6)  {\textbf{JSON Engine}\\(\texttt{nlohmann::json})};
 
 \draw[arrow] (api_student.south) -- (entity_student.north);
-\draw[arrow] (api_alloc.south) -- (json_engine.north);
+\draw[arrow] (api_alloc.south)   -- (json_engine.north);
 
-\draw[arrow, color=darkcyan] (entity_student.south) -- (tb_stud.north) node[midway, left, font=\footnotesize] {MySQL C API (\texttt{mysql.h} / \texttt{libmysql})};
-\draw[arrow, color=darkcyan] (api_room.south) -- (tb_room.north);
-\draw[arrow, color=darkcyan] (api_alloc.south) -- (tb_alloc.north);
-\draw[arrow, color=darkcyan] (api_comp.south) -- (tb_comp.north);
-\draw[arrow, color=darkcyan] (api_login.south) -- (tb_admin.north);
+\begin{scope}[on background layer]
+    % Generous fit spanning symmetrically to +/- 9.5cm at Tier 2 level
+    \node[tierbox, fit=(router) (api_login) (api_dash) (entity_student) (json_engine) (t2_west) (t2_east)] (tier2) {};
+\end{scope}
+% Wrapped title anchored at top-left
+\node[anchor=south west, align=left, font=\bfseries\color{navyblue}, yshift=3pt] at (tier2.north west) {Application Tier\\\scriptsize (C++ REST API Server - Port 8080)};
+
+% ==================== Tier 3: Data Persistence Tier ====================
+\coordinate (t3_west) at (-9.5, -9.4);
+\coordinate (t3_east) at (9.5, -9.4);
+
+% 5 DB Tables spaced evenly across x = -5.6, -2.8, 0.0, 2.8, 5.6
+\node[dbbox] (tb_admin) at (-5.6, -9.4) {\textbf{admins}\\{\tiny\color{darkcyan!85!black}(admin\_id PK)}};
+\node[dbbox] (tb_stud)  at (-2.8, -9.4) {\textbf{students}\\{\tiny\color{darkcyan!85!black}(student\_id PK)}};
+\node[dbbox] (tb_room)  at (0.0, -9.4)  {\textbf{rooms}\\{\tiny\color{darkcyan!85!black}(room\_id PK)}};
+\node[dbbox] (tb_alloc) at (2.8, -9.4)  {\textbf{allocations}\\{\tiny\color{darkcyan!85!black}(allocation\_id PK)}};
+\node[dbbox] (tb_comp)  at (5.6, -9.4)  {\textbf{complaints}\\{\tiny\color{darkcyan!85!black}(complaint\_id PK)}};
+
+% Tier 3 Title placed safely at the bottom where no arrows cross
+\node[anchor=north, font=\bfseries\color{darkcyan}, yshift=-4pt] (tier3_lbl) at (0, -10.2) {Data Persistence Tier (MySQL \texttt{hostel\_management} DB)};
+
+\begin{scope}[on background layer]
+    \node[tierbox, fit=(tb_admin) (tb_comp) (tier3_lbl) (t3_west) (t3_east), draw=darkcyan, fill=cyan!3] (tier3) {};
+\end{scope}
+
+% Dedicated API Bridge Label (Safely placed at x = 7.0 to 9.2, with over 1.4cm clear space to line at x = 5.6)
+\node[draw=darkcyan, fill=white, rounded corners=3pt, line width=0.8pt, font=\scriptsize\bfseries\color{darkcyan}, align=center, inner sep=4pt, anchor=west] at (7.0, -7.6) {MySQL C API\\{\tiny\mdseries(\texttt{libmysql})}};
+
+% Direct Parallel Database Connectors (Lines end cleanly at x = -5.6, -2.8, 0.0, 2.8, 5.6 with zero overlap)
+\draw[dbarrow] (api_login.south)      |- (-5.6, -7.6) -- (tb_admin.north);
+\draw[dbarrow] (entity_student.south) |- (-2.8, -7.6) -- (tb_stud.north);
+\draw[dbarrow] (api_room.south)       |- (0.0, -7.6)  -- (tb_room.north);
+\draw[dbarrow] (json_engine.south)    |- (2.8, -7.6)  -- (tb_alloc.north);
+\draw[dbarrow] (api_comp.south)       |- (5.6, -7.6)  -- (tb_comp.north);
 
 \end{tikzpicture}
 }
@@ -643,50 +671,35 @@ The core business logic, input sanitization, database interaction, and HTTP rout
 
 \subsubsection{Development, Compilation, and Toolchain Environment}
 \begin{itemize}
-    \item \textbf{Compilers:}
-    \begin{itemize}
-        \item \textit{GCC / MinGW-w64 (v9.0+ / v11.0+):} Primary compiler for Windows and POSIX environments with flags: \texttt{-std=c++17 -O2 -lmysql -lws2\_32 -lpthread}.
-        \item \textit{Microsoft Visual C++ (MSVC 2019/2022):} Supported on Windows via Visual Studio build tools.
-    \end{itemize}
-    \item \textbf{Networking and System Libraries:}
-    \begin{itemize}
-        \item Windows Sockets 2 (\texttt{ws2\_32.lib}): Network socket subsystem for Windows execution.
-        \item POSIX Threads (\texttt{pthread}): Multi-threading primitives for concurrent HTTP request worker pooling.
-    \end{itemize}
-    \item \textbf{Configuration and Environment:} Database host, username, password, and port are parameterized through operating system environment variables (\texttt{HOSTEL\_DB\_HOST}, \texttt{HOSTEL\_DB\_USER}, \texttt{HOSTEL\_DB\_PASSWORD}, \texttt{HOSTEL\_DB\_NAME}), separating configuration from source code.
-    \item \textbf{Documentation and Modeling:} \LaTeX{} with TikZ for formal academic documentation; Mermaid.js for architectural, control flow, and data flow modeling.
+    \item \textbf{Compilers:} GCC / MinGW-w64 (v9.0+ / v11.0+) with flags \texttt{-std=c++17 -O2 -lmysql -lws2\_32 -lpthread}; MSVC 2019/2022 supported.
+    \item \textbf{Networking \& Threading:} Windows Sockets 2 (\texttt{ws2\_32.lib}) and POSIX Threads (\texttt{pthread}) for worker thread pooling.
+    \item \textbf{Configuration:} Database credentials decoupled into environment variables (\texttt{HOSTEL\_DB\_HOST}, \texttt{HOSTEL\_DB\_USER}, \texttt{HOSTEL\_DB\_PASSWORD}, \texttt{HOSTEL\_DB\_NAME}).
+    \item \textbf{Documentation \& Modeling:} \LaTeX{} with TikZ for formal report figures; Mermaid.js for design diagrams.
 \end{itemize}
 
 \subsection{Technology Stack Summary Matrix}
 \label{sec:tech_table}
-Table~\ref{tab:tech_stack} provides a consolidated summary of the technologies, libraries, tools, and versions comprising the HostelOS architecture.
+Table~\ref{tab:tech_stack} summarizes the technologies, libraries, and protocols comprising the HostelOS architecture.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
-\small
-\begin{tabularx}{\textwidth}{l l l X}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabularx}{\textwidth}{p{2.5cm} p{3.6cm} X}
 \toprule
-\textbf{Layer / Tier} & \textbf{Technology} & \textbf{Version / Standard} & \textbf{Architectural Role \& Capability} \\
+\textbf{Layer / Tier} & \textbf{Technology \& Version} & \textbf{Architectural Role \& Capability} \\
 \midrule
-\textbf{Frontend UI} & HTML5 & W3C Recommendation & Semantic page structure, accessibility, and form scaffolding across all 4 application portals. \\
-\addlinespace
-\textbf{Styling} & CSS3 & W3C Standard & Modern design tokens (\texttt{tokens.css}), dark theme palette, glassmorphism, flexbox/grid responsive layouts. \\
-\addlinespace
-\textbf{Client Logic} & JavaScript & ECMAScript 2020+ & Asynchronous Fetch API, non-blocking REST requests, dynamic DOM rendering, and session management. \\
-\addlinespace
-\textbf{Backend Lang.} & C++ & ISO/IEC C++17 & Core application logic, OOP domain models, controller dispatchers, memory safety via RAII. \\
-\addlinespace
-\textbf{Web Server} & cpp-httplib & v0.14+ (Y.~Hirose) & Multi-threaded embedded HTTP REST server on port 8080, route dispatching, CORS handling. \\
-\addlinespace
-\textbf{Serialization} & nlohmann/json & v3.11+ (N.~Lohmann) & High-speed JSON serialization/deserialization and REST payload validation in modern C++. \\
-\addlinespace
-\textbf{DB Connector} & MySQL C API & v8.0 Client Library & Native socket connection, direct SQL query execution, parameterized query escaping (\texttt{mysql.h}). \\
-\addlinespace
-\textbf{Database Engine} & MySQL Server & v8.0+ / MariaDB 10.4+ & Relational persistence, 3NF schema, ACID compliance, foreign key integrity, InnoDB engine. \\
-\addlinespace
-\textbf{Build Tools} & MinGW / GCC & v9.0+ / MSVC 2019+ & Native compilation with flags \texttt{-std=c++17 -O2 -lmysql -lws2\_32 -lpthread}. \\
-\addlinespace
-\textbf{Protocol} & HTTP/1.1 REST & RFC 7230 / JSON MIME & Asynchronous stateless client-server communication using standard HTTP verbs (\texttt{GET}, \texttt{POST}, \texttt{PUT}). \\
+\textbf{Frontend UI}   & HTML5 (W3C Standard)            & Semantic page structure and form scaffolding across all 4 portals. \\
+\textbf{Styling}       & CSS3 (Tokens \& Dark Palette)  & Modern design tokens (\texttt{tokens.css}), glassmorphism, responsive flex/grid. \\
+\textbf{Client Logic}  & JavaScript (ES2020+ Fetch API)  & Asynchronous non-blocking REST calls, DOM mutations, and session state. \\
+\textbf{Backend Lang.} & C++ (ISO C++17 Standard)        & Domain business logic, controllers, and deterministic memory management via RAII. \\
+\textbf{Web Server}    & cpp-httplib (v0.14+ single-hdr) & Multi-threaded embedded HTTP server on port 8080, route dispatching, CORS. \\
+\textbf{Serialization} & nlohmann/json (v3.11+)          & High-speed JSON serialization/deserialization and REST payload validation. \\
+\textbf{DB Connector}  & MySQL C API (\texttt{mysql.h}) & Low-latency direct socket connection, SQL execution, and injection escaping. \\
+\textbf{Database}      & MySQL 8.0+ / MariaDB 10.4+      & 3NF relational persistence, ACID guarantees, foreign keys, InnoDB engine. \\
+\textbf{Build Tools}   & MinGW-w64 / MSVC 2019+          & Native binary compilation with flags \texttt{-std=c++17 -O2 -lmysql -lws2\_32}. \\
+\textbf{Protocol}      & HTTP/1.1 REST (RFC 7230)        & Stateless async client-server communication using standard HTTP verbs. \\
 \bottomrule
 \end{tabularx}
 \caption{HostelOS Technology Stack and Component Specifications}
@@ -695,20 +708,16 @@ Table~\ref{tab:tech_stack} provides a consolidated summary of the technologies, 
 
 \subsection{Architectural Rationale and Design Justifications}
 \label{sec:tech_justification}
-The selection of the technology stack for HostelOS was driven by clear engineering principles, performance requirements, and pedagogical objectives:
+The selection of the HostelOS technology stack was driven by core engineering principles:
 
 \begin{enumerate}
-    \item \textbf{C++17 for Application Backend vs. Interpreted Runtimes:}
-    While web systems are conventionally constructed using Node.js, Python (Django/Flask), or Java (Spring Boot), HostelOS utilizes modern C++17 to demonstrate the practical application of Object-Oriented Systems in network programming. C++ delivers deterministic memory utilization, sub-millisecond route response latencies, and zero garbage-collection jitter. Running as a compiled native binary, the backend server consumes less than 15\,MB of operational RAM compared to 200--500\,MB typical of Node.js or JVM runtimes.
-
-    \item \textbf{Single-Header C++ Libraries (\texttt{cpp-httplib} and \texttt{nlohmann/json}):}
-    C++ lacks a standardized universal package manager comparable to \texttt{npm} or \texttt{pip}. Utilizing robust, industry-standard single-header libraries eliminates fragile external build dependencies, complex CMake transitive dependencies, and platform-specific link errors. This design guarantees seamless drop-in compilation across both MinGW-w64 on Windows and GCC on Linux.
-
-    \item \textbf{Vanilla Client-Side Architecture vs. Heavy SPA Frameworks:}
-    Modern Single Page Application (SPA) frameworks (e.g., React, Angular) introduce hundreds of megabytes of \texttt{node\_modules}, complex compilation pipelines (Webpack, Vite), and client-side hydration delays. By engineering the frontend with native HTML5, modern CSS3 custom properties, and native asynchronous JavaScript (\texttt{fetch}), the application achieves instant cold-starts, zero build steps, and complete browser portability while retaining high-fidelity responsive design.
-
-    \item \textbf{Relational Database with ACID Guarantees vs. NoSQL Document Stores:}
-    Hostel management operations require absolute referential integrity. For example, a room's physical capacity must never be exceeded, a student must not hold simultaneous active room allocations, and deleting a resident must cleanly resolve associated complaints. Document-oriented NoSQL databases (e.g., MongoDB) sacrifice multi-table transactional guarantees in favor of eventual consistency. MySQL's InnoDB storage engine enforces atomic transactions, foreign key cascades, and row-level locking, ensuring that concurrent allocation requests cannot result in double-booking.
+    \item \textbf{C++17 Backend vs. Interpreted Runtimes:} C++ provides deterministic memory management, sub-millisecond route response latencies, and zero garbage-collection jitter. The compiled native binary consumes under 15\,MB of RAM, compared to 200--500\,MB typical of Node.js or JVM runtimes.
+    
+    \item \textbf{Single-Header C++ Libraries (\texttt{cpp-httplib} \& \texttt{nlohmann/json}):} Utilizing single-header libraries eliminates external package manager dependencies, CMake build cascades, and linker discrepancies across Windows (MinGW) and Linux (GCC).
+    
+    \item \textbf{Vanilla Client-Side Stack vs. Heavy Frameworks:} Avoiding heavy SPA frameworks (React/Angular) removes large \texttt{node\_modules} overhead and compilation pipelines, ensuring instant page loads, zero build steps, and native browser compatibility.
+    
+    \item \textbf{Relational ACID Database vs. NoSQL:} Hostel room allocation requires strict referential integrity—preventing overbooking and simultaneous active student allocations. MySQL's InnoDB engine enforces atomic transactions, foreign key cascades, and row-level locks.
 \end{enumerate}
 
 % =====================================================================
@@ -721,22 +730,20 @@ The selection of the technology stack for HostelOS was driven by clear engineeri
 \label{sec:db_specs}
 The persistence layer of HostelOS is implemented on MySQL Server 8.0 with InnoDB storage engine tables, ensuring ACID compliance, row-level locking, and strict foreign key integrity. The relational design satisfies Third Normal Form (3NF), minimizing data redundancy. Table~\ref{tab:db_schema} outlines the relational schema specifications.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
-\small
-\begin{tabularx}{\textwidth}{l l l X}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabularx}{\textwidth}{p{2.0cm} p{2.2cm} p{3.2cm} X}
 \toprule
 \textbf{Table Name} & \textbf{Primary Key} & \textbf{Foreign Keys} & \textbf{Attributes \& Constraints} \\
 \midrule
-\texttt{students} & \texttt{student\_id} & None & \texttt{name} VARCHAR(100), \texttt{email} VARCHAR(100) UNIQUE, \texttt{department} VARCHAR(50), \texttt{phone} VARCHAR(15), \texttt{password} VARCHAR(255). \\
-\addlinespace
-\texttt{rooms} & \texttt{room\_id} & None & \texttt{room\_number} VARCHAR(10) UNIQUE, \texttt{block} VARCHAR(20), \texttt{floor} INT, \texttt{capacity} INT. \\
-\addlinespace
-\texttt{allocations} & \texttt{allocation\_id} & \texttt{student\_id} $\rightarrow$ \texttt{students}, \texttt{room\_id} $\rightarrow$ \texttt{rooms} & \texttt{allocation\_date} DATE, \texttt{end\_date} DATE (NULL indicates currently active occupancy). \\
-\addlinespace
-\texttt{complaints} & \texttt{complaint\_id} & \texttt{student\_id} $\rightarrow$ \texttt{students} & \texttt{description} VARCHAR(500), \texttt{status} VARCHAR(20) DEFAULT 'Pending', \texttt{created\_at} TIMESTAMP. \\
-\addlinespace
-\texttt{admins} & \texttt{admin\_id} & None & \texttt{username} VARCHAR(50) UNIQUE, \texttt{password} VARCHAR(255). \\
+\texttt{students}    & \texttt{student\_id}    & None & \texttt{name} VARCHAR(100), \texttt{email} VARCHAR(100) UNIQUE, \texttt{department} VARCHAR(50), \texttt{phone} VARCHAR(15), \texttt{password} VARCHAR(255). \\
+\texttt{rooms}       & \texttt{room\_id}       & None & \texttt{room\_number} VARCHAR(10) UNIQUE, \texttt{block} VARCHAR(20), \texttt{floor} INT, \texttt{capacity} INT. \\
+\texttt{allocations} & \texttt{allocation\_id} & \texttt{student\_id} $\rightarrow$ \texttt{students}, \texttt{room\_id} $\rightarrow$ \texttt{rooms} & \texttt{allocation\_date} DATE, \texttt{end\_date} DATE (NULL indicates active occupancy). \\
+\texttt{complaints}  & \texttt{complaint\_id}  & \texttt{student\_id} $\rightarrow$ \texttt{students} & \texttt{description} VARCHAR(500), \texttt{status} VARCHAR(20) DEFAULT 'Pending', \texttt{created\_at} TIMESTAMP. \\
+\texttt{admins}      & \texttt{admin\_id}      & None & \texttt{username} VARCHAR(50) UNIQUE, \texttt{password} VARCHAR(255). \\
 \bottomrule
 \end{tabularx}
 \caption{HostelOS Relational Database Schema Specifications}
@@ -747,16 +754,16 @@ The persistence layer of HostelOS is implemented on MySQL Server 8.0 with InnoDB
 \label{sec:er_tikz}
 Figure~\ref{fig:er_schema} illustrates the relational entity structures, primary keys, and foreign key associations across the database.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\resizebox{0.85\textwidth}{!}{%
+\resizebox{0.92\textwidth}{!}{%
 \begin{tikzpicture}[
     font=\sffamily\footnotesize,
-    node distance=1.2cm and 1.8cm,
-    tablebox/.style={draw=navyblue, fill=white, rounded corners=3pt, line width=0.8pt, align=left, inner sep=6pt},
-    arrow/.style={-{Latex[length=2.5mm]}, line width=0.8pt, color=navyblue}
+    tablebox/.style={draw=navyblue, fill=white, rounded corners=3pt, line width=0.85pt, align=left, inner sep=6pt},
+    arrow/.style={-{Latex[length=2.5mm]}, line width=0.85pt, color=navyblue}
 ]
 
+% Top Row: STUDENTS (left), ALLOCATIONS (center), ROOMS (right) with ample spacing
 \node[tablebox] (stud) at (0, 2) {
     \textbf{STUDENTS} \\
     \rule{3.4cm}{0.4pt} \\
@@ -768,7 +775,7 @@ Figure~\ref{fig:er_schema} illustrates the relational entity structures, primary
     password : varchar(255)
 };
 
-\node[tablebox] (alloc) at (6.0, 2) {
+\node[tablebox] (alloc) at (7.0, 2) {
     \textbf{ALLOCATIONS} \\
     \rule{4.0cm}{0.4pt} \\
     \underline{\textbf{PK}} allocation\_id : int \\
@@ -778,7 +785,7 @@ Figure~\ref{fig:er_schema} illustrates the relational entity structures, primary
     end\_date : date (nullable)
 };
 
-\node[tablebox] (rooms) at (12.0, 2) {
+\node[tablebox] (rooms) at (14.2, 2) {
     \textbf{ROOMS} \\
     \rule{3.6cm}{0.4pt} \\
     \underline{\textbf{PK}} room\_id : int \\
@@ -788,7 +795,8 @@ Figure~\ref{fig:er_schema} illustrates the relational entity structures, primary
     capacity : int
 };
 
-\node[tablebox] (comp) at (0, -2.5) {
+% Bottom Row: COMPLAINTS (left), ADMINS (right)
+\node[tablebox] (comp) at (0, -3.2) {
     \textbf{COMPLAINTS} \\
     \rule{3.4cm}{0.4pt} \\
     \underline{\textbf{PK}} complaint\_id : int \\
@@ -798,7 +806,7 @@ Figure~\ref{fig:er_schema} illustrates the relational entity structures, primary
     created\_at : timestamp
 };
 
-\node[tablebox] (admin) at (12.0, -2.5) {
+\node[tablebox] (admin) at (14.2, -3.2) {
     \textbf{ADMINS} \\
     \rule{3.6cm}{0.4pt} \\
     \underline{\textbf{PK}} admin\_id : int \\
@@ -806,9 +814,10 @@ Figure~\ref{fig:er_schema} illustrates the relational entity structures, primary
     password : varchar(255)
 };
 
-\draw[arrow] (alloc) -- node[above, font=\tiny] {N:1 (receives)} (stud);
-\draw[arrow] (alloc) -- node[above, font=\tiny] {N:1 (assigned in)} (rooms);
-\draw[arrow] (comp) -- node[right, font=\tiny] {N:1 (files)} (stud);
+% Clean connectors with labels perfectly centered in wide whitespace channels
+\draw[arrow] (alloc) -- node[midway, above=3pt, font=\scriptsize\bfseries\color{navyblue}] {N:1 (receives)} (stud);
+\draw[arrow] (alloc) -- node[midway, above=3pt, font=\scriptsize\bfseries\color{navyblue}] {N:1 (assigned in)} (rooms);
+\draw[arrow] (comp)  -- node[midway, right=3pt, font=\scriptsize\bfseries\color{navyblue}] {N:1 (files)} (stud);
 
 \end{tikzpicture}
 }
@@ -924,23 +933,26 @@ The object-oriented design is modeled through a comprehensive UML Class Diagram 
 
 Figure~\ref{fig:class_diagram} renders the complete UML Class Diagram in native TikZ.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \resizebox{0.98\textwidth}{!}{%
 \begin{tikzpicture}[
-    font=\sffamily\footnotesize,
+    font=\sffamily\scriptsize,
     umlclass/.style={
-        draw=navyblue, fill=white, line width=0.85pt, rounded corners=2pt, align=left, inner sep=6pt
+        draw=navyblue, fill=white, line width=0.85pt, rounded corners=2pt, align=left, inner sep=5pt, text width=4.2cm
+    },
+    umlwide/.style={
+        draw=navyblue, fill=white, line width=0.85pt, rounded corners=2pt, align=left, inner sep=5pt, text width=4.8cm
     },
     rel/.style={-{Latex[length=2.5mm]}, line width=0.85pt, color=navyblue},
-    dep/.style={-{Latex[length=2.5mm]}, dashed, line width=0.9pt, color=navyblue},
-    comp/.style={{Diamond[fill=navyblue, length=3mm]}-{Latex[length=2.5mm]}, line width=0.85pt, color=navyblue}
+    dep/.style={-{Latex[length=2.5mm]}, dashed, line width=0.85pt, color=navyblue},
+    comp/.style={{Diamond[fill=navyblue, length=2.8mm]}-{Latex[length=2.5mm]}, line width=0.85pt, color=navyblue}
 ]
 
 % Server Node (Top Center)
-\node[umlclass] (server) at (0, 7.8) {
+\node[umlclass, text width=4.6cm] (server) at (0, 7.8) {
     \textbf{httplib::Server} \\
-    \rule{5.0cm}{0.4pt} \\
+    \rule{4.6cm}{0.4pt} \\
     + Post(pattern, handler) : void \\
     + Get(pattern, handler) : void \\
     + Put(pattern, handler) : void \\
@@ -948,117 +960,111 @@ Figure~\ref{fig:class_diagram} renders the complete UML Class Diagram in native 
     + listen(host, port) : void
 };
 
-% Row 1 of Controllers
-\node[umlclass] (login_api) at (-6.2, 3.2) {
+% Row 1: Controllers (x = -6.4, 0.0, 6.4)
+\node[umlclass] (login_api) at (-6.4, 3.4) {
     \textbf{\guillemotleft controller\guillemotright\ LoginAPI} \\
-    \rule{4.5cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     - conn : MYSQL* \\
-    \rule{4.5cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     + LoginAPI(c : MYSQL*) \\
     + handleLogin(req, res) : void
 };
 
-\node[umlclass] (student_api) at (0.0, 3.2) {
+\node[umlclass] (student_api) at (0.0, 3.4) {
     \textbf{\guillemotleft controller\guillemotright\ StudentAPI} \\
-    \rule{5.2cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     - conn : MYSQL* \\
-    \rule{5.2cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     + StudentAPI(c : MYSQL*) \\
-    + handleGetStudentById(req, res) : void \\
-    + handleGetAllStudents(req, res) : void \\
-    + handleGetNextId(req, res) : void \\
-    + handleCreateStudent(req, res) : void
+    + handleGetStudentById(..) : void \\
+    + handleGetAllStudents(..) : void \\
+    + handleGetNextId(..) : void \\
+    + handleCreateStudent(..) : void
 };
 
-\node[umlclass] (room_api) at (6.2, 3.2) {
+\node[umlclass] (room_api) at (6.4, 3.4) {
     \textbf{\guillemotleft controller\guillemotright\ RoomAPI} \\
-    \rule{4.5cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     - conn : MYSQL* \\
-    \rule{4.5cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     + RoomAPI(c : MYSQL*) \\
     + handleGetRooms(req, res) : void
 };
 
-% Row 2 of Controllers
-\node[umlclass] (alloc_api) at (-6.2, -1.8) {
+% Row 2: Controllers (x = -6.4, 0.0, 6.4) with ample vertical and horizontal space
+\node[umlclass] (alloc_api) at (-6.4, -1.8) {
     \textbf{\guillemotleft controller\guillemotright\ AllocationAPI} \\
-    \rule{5.2cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     - conn : MYSQL* \\
-    \rule{5.2cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     + AllocationAPI(c : MYSQL*) \\
-    + handleGetAllocations(req, res) : void \\
-    + handleCreateAllocation(req, res) : void \\
-    + handleDeallocate(req, res) : void
+    + handleGetAllocations(..) : void \\
+    + handleCreateAllocation(..) : void \\
+    + handleDeallocate(..) : void
 };
 
 \node[umlclass] (comp_api) at (0.0, -1.8) {
     \textbf{\guillemotleft controller\guillemotright\ ComplaintAPI} \\
-    \rule{5.5cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     - conn : MYSQL* \\
-    \rule{5.5cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     + ComplaintAPI(c : MYSQL*) \\
-    + handleCreateComplaint(req, res) : void \\
-    + handleGetStudentComplaints(req, res) : void \\
-    + handleGetAllComplaints(req, res) : void \\
-    + handleUpdateComplaintStatus(req, res) : void
+    + handleCreateComplaint(..) : void \\
+    + handleGetStudentComplaints(..) : void \\
+    + handleGetAllComplaints(..) : void \\
+    + handleUpdateStatus(..) : void
 };
 
-\node[umlclass] (dash_api) at (6.2, -1.8) {
+\node[umlclass] (dash_api) at (6.4, -1.8) {
     \textbf{\guillemotleft controller\guillemotright\ DashboardAPI} \\
-    \rule{5.2cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     - conn : MYSQL* \\
-    \rule{5.2cm}{0.4pt} \\
+    \rule{4.2cm}{0.4pt} \\
     + DashboardAPI(c : MYSQL*) \\
     + handleGetDashboard(req, res) : void
 };
 
-% Domain Entity: Student (Placed in its own dedicated column to the right)
-\node[umlclass] (student_class) at (13.6, 2.0) {
+% Domain Entity: Student (Dedicated column on the right, well-separated)
+\node[umlwide] (student_class) at (12.8, 1.8) {
     \textbf{\guillemotleft entity\guillemotright\ Student} \\
-    \rule{6.6cm}{0.4pt} \\
+    \rule{4.8cm}{0.4pt} \\
     + student\_id : int \\
-    + name : string \\
-    + email : string \\
-    + department : string \\
-    + phone : string \\
+    + name, email : string \\
+    + department, phone : string \\
     + password : string \\
-    \rule{6.6cm}{0.4pt} \\
+    \rule{4.8cm}{0.4pt} \\
     + Student() \\
     + Student(id, n, e, d, p, pwd) \\
-    + createStudent(conn, ...) : static bool \\
-    + addStudent(conn : MYSQL*) : void \\
-    + viewStudent(conn : MYSQL*) : void \\
-    + updateStudent(conn : MYSQL*) : void \\
-    + deleteStudent(conn : MYSQL*) : void
+    + createStudent(conn, ..) : bool \\
+    + addStudent(conn) : void \\
+    + viewStudent(conn) : void \\
+    + updateStudent(conn) : void \\
+    + deleteStudent(conn) : void
 };
 
 % Connection Infrastructure (Bottom Center)
-\node[umlclass] (mysql_conn) at (0.0, -6.0) {
+\node[umlwide] (mysql_conn) at (0.0, -5.8) {
     \textbf{\guillemotleft external C struct\guillemotright\ MySQLConnection} \\
-    \rule{6.5cm}{0.4pt} \\
+    \rule{4.8cm}{0.4pt} \\
     + conn : MYSQL* \\
     + connector\_fd : my\_socket
 };
 
-% Connectors from Server to Row 1
+% Server Dispatch Composition Connectors
 \draw[comp] (server.south) -| (login_api.north);
 \draw[comp] (server.south) -- (student_api.north);
 \draw[comp] (server.south) -| (room_api.north);
 
-% Connectors from Server to Row 2
-\draw[comp] (server.west) -| (-9.6, -1.8) -- (alloc_api.west);
-\draw[comp] (student_api.south) -- (comp_api.north);
-\draw[comp] (server.east) -| (9.6, -1.8) -- (dash_api.east);
+\draw[comp] (login_api.south) -- (alloc_api.north);
+\draw[comp] (room_api.south)  -- (dash_api.north);
 
 % Dependency: StudentAPI invokes Student::createStudent()
-\draw[dep] (student_api.north) -- ++(0, 1.4) -| node[pos=0.35, above=2pt, font=\scriptsize\bfseries] {invokes createStudent()} (student_class.north west);
+\draw[dep] (student_api.north) -- ++(0, 1.2) -| node[pos=0.35, above=2pt, font=\scriptsize\bfseries] {invokes createStudent()} (student_class.north);
 
-% Persistence Associations to MySQL
+% Database Associations to MySQLConnection
 \draw[rel] (alloc_api.south) |- (mysql_conn.west);
-\draw[rel] (comp_api.south) -- (mysql_conn.north);
-\draw[rel] (dash_api.south) |- (mysql_conn.east);
-\draw[rel] (login_api.south) -- (alloc_api.north);
-\draw[rel] (room_api.south) -- (dash_api.north);
+\draw[rel] (comp_api.south)  -- (mysql_conn.north);
+\draw[rel] (dash_api.south)  |- (mysql_conn.east);
 \draw[rel] (student_class.south) |- (mysql_conn.east);
 
 \end{tikzpicture}
@@ -1091,14 +1097,10 @@ classDiagram
     %% Domain Entity Class (student.cpp)
     class Student {
         +int student_id
-        +string name
-        +string email
-        +string department
-        +string phone
-        +string password
+        +string name, email, department, phone, password
         +Student()
         +Student(int id, string n, string e, string d, string p, string pwd)
-        +createStudent(conn, id, name, email, department, phone, password, errMsg)$ bool
+        +createStudent(conn, id, name, ..)$ bool
         +addStudent(conn) void
         +viewStudent(conn) void
         +updateStudent(conn) void
@@ -1115,19 +1117,19 @@ classDiagram
     class StudentAPI {
         -MYSQL* conn
         +StudentAPI(MYSQL* c)
-        +handleGetStudentById(Request req, Response res) void
-        +handleGetAllStudents(Request req, Response res) void
-        +handleGetNextId(Request req, Response res) void
-        +handleCreateStudent(Request req, Response res) void
+        +handleGetStudentById(..) void
+        +handleGetAllStudents(..) void
+        +handleGetNextId(..) void
+        +handleCreateStudent(..) void
     }
 
     class ComplaintAPI {
         -MYSQL* conn
         +ComplaintAPI(MYSQL* c)
-        +handleCreateComplaint(Request req, Response res) void
-        +handleGetStudentComplaints(Request req, Response res) void
-        +handleGetAllComplaints(Request req, Response res) void
-        +handleUpdateComplaintStatus(Request req, Response res) void
+        +handleCreateComplaint(..) void
+        +handleGetStudentComplaints(..) void
+        +handleGetAllComplaints(..) void
+        +handleUpdateComplaintStatus(..) void
     }
 
     class DashboardAPI {
@@ -1145,73 +1147,75 @@ classDiagram
     class AllocationAPI {
         -MYSQL* conn
         +AllocationAPI(MYSQL* c)
-        +handleGetAllocations(Request req, Response res) void
-        +handleDeallocate(Request req, Response res) void
-        +handleCreateAllocation(Request req, Response res) void
+        +handleGetAllocations(..) void
+        +handleDeallocate(..) void
+        +handleCreateAllocation(..) void
     }
 
-    %% Relationships & Dependencies
+    %% Relationships & Bindings
     StudentAPI ..> Student : invokes createStudent()
+    LoginAPI --> MySQLConnection : query
+    StudentAPI --> MySQLConnection : query
+    ComplaintAPI --> MySQLConnection : query
+    DashboardAPI --> MySQLConnection : query
+    RoomAPI --> MySQLConnection : query
+    AllocationAPI --> MySQLConnection : query
+    Student --> MySQLConnection : query
 
-    LoginAPI --> MySQLConnection : queries
-    StudentAPI --> MySQLConnection : queries
-    ComplaintAPI --> MySQLConnection : queries
-    DashboardAPI --> MySQLConnection : queries
-    RoomAPI --> MySQLConnection : queries
-    AllocationAPI --> MySQLConnection : queries
-    Student --> MySQLConnection : queries
-
-    HttpServer *-- LoginAPI : dispatches /api/login
-    HttpServer *-- StudentAPI : dispatches /api/students
-    HttpServer *-- ComplaintAPI : dispatches /api/complaints
-    HttpServer *-- DashboardAPI : dispatches /api/admin/dashboard
-    HttpServer *-- RoomAPI : dispatches /api/rooms
-    HttpServer *-- AllocationAPI : dispatches /api/allocations
+    HttpServer *-- LoginAPI : /api/login
+    HttpServer *-- StudentAPI : /api/students
+    HttpServer *-- RoomAPI : /api/rooms
+    HttpServer *-- AllocationAPI : /api/allocations
+    HttpServer *-- ComplaintAPI : /api/complaints
+    HttpServer *-- DashboardAPI : /api/admin/dashboard
 \end{lstlisting}
 
 \subsection{UML Use Case Diagram}
 \label{sec:usecase}
 Figure~\ref{fig:use_case} models interactions for the \textbf{Student} and \textbf{Warden / Administrator} actors.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\resizebox{0.92\textwidth}{!}{%
+\resizebox{0.95\textwidth}{!}{%
 \begin{tikzpicture}[
     font=\sffamily,
-    actor/.style={draw=navyblue, line width=1pt, fill=blue!10, rounded corners=2pt, align=center, inner sep=4pt},
-    usecase/.style={draw=navyblue, fill=white, ellipse, line width=0.8pt, align=center, inner sep=4pt, font=\small},
+    actor/.style={draw=navyblue, line width=1pt, fill=blue!10, rounded corners=3pt, align=center, inner sep=5pt},
+    usecase/.style={draw=navyblue, fill=white, ellipse, line width=0.85pt, align=center, inner sep=3pt, font=\scriptsize, text width=3.2cm},
     systembox/.style={draw=navyblue!60, fill=blue!2, rounded corners=8pt, line width=1.2pt},
-    assoc/.style={line width=0.9pt, color=navyblue!80}
+    assoc/.style={line width=0.85pt, color=navyblue!80}
 ]
 
-% System Boundary
-\draw[systembox] (0, -0.5) rectangle (11.5, 11.5);
-\node[font=\bfseries\color{navyblue}, anchor=north] at (5.75, 11.2) {HostelOS Management System Boundary};
+% System Boundary (Spacious and balanced)
+\draw[systembox] (0, 0.5) rectangle (13.4, 11.8);
+\node[font=\bfseries\color{navyblue}, anchor=north] at (6.7, 11.5) {HostelOS Management System Boundary};
 
 % Actors
-\node[actor] (student) at (-2.5, 4.0) {\textbf{Student}\\\footnotesize (Resident)};
-\node[actor] (admin) at (14.0, 6.0) {\textbf{Warden / Admin}\\\footnotesize (Management)};
+\node[actor] (student) at (-2.2, 5.5) {\textbf{Student}\\\footnotesize (Resident)};
+\node[actor] (admin)   at (15.6, 5.5) {\textbf{Warden / Admin}\\\footnotesize (Management)};
 
-% Use Cases
-\node[usecase] (uc_login) at (3.5, 10.0) {UC-01: Authenticate\\(ID/Email \& Password)};
-\node[usecase] (uc_profile) at (3.5, 8.2) {UC-02: View Room \&\\Roommate Profile};
-\node[usecase] (uc_lodge) at (3.5, 6.2) {UC-03: Lodge Maintenance\\Grievance Ticket};
-\node[usecase] (uc_track) at (3.5, 4.2) {UC-04: Track Grievance\\Resolution Status};
+% Shared Authentication Use Case (Top Center - No Crossing Lines)
+\node[usecase] (uc_login) at (6.7, 10.2) {UC-01: Authenticate\\(ID/Email \& Password)};
 
-\node[usecase] (uc_dash) at (8.0, 9.5) {UC-05: Monitor Facility\\Dashboard KPIs};
-\node[usecase] (uc_alloc) at (8.0, 7.5) {UC-06: Allocate / Deallocate\\Hostel Rooms};
-\node[usecase] (uc_triage) at (8.0, 5.5) {UC-07: Triage \& Update\\Complaint Status};
-\node[usecase] (uc_register) at (8.0, 3.5) {UC-08: Onboard \& Register\\New Student};
-\node[usecase] (uc_rooms) at (8.0, 1.5) {UC-09: Inspect Real-Time\\Room Occupancy};
+% Resident Use Cases (Left Column: x = 3.4)
+\node[usecase] (uc_profile) at (3.4, 7.4) {UC-02: View Room \&\\Roommate Profile};
+\node[usecase] (uc_lodge)   at (3.4, 4.7) {UC-03: Lodge Maintenance\\Grievance Ticket};
+\node[usecase] (uc_track)   at (3.4, 2.0) {UC-04: Track Grievance\\Resolution Status};
 
-% Associations: Student
-\draw[assoc] (student) -- (uc_login);
+% Administrative Use Cases (Right Column: x = 10.0)
+\node[usecase] (uc_dash)     at (10.0, 8.4) {UC-05: Monitor Facility\\Dashboard KPIs};
+\node[usecase] (uc_alloc)    at (10.0, 6.8) {UC-06: Allocate / Deallocate\\Hostel Rooms};
+\node[usecase] (uc_triage)   at (10.0, 5.2) {UC-07: Triage \& Update\\Complaint Status};
+\node[usecase] (uc_register) at (10.0, 3.6) {UC-08: Onboard \& Register\\New Student};
+\node[usecase] (uc_rooms)    at (10.0, 2.0) {UC-09: Inspect Real-Time\\Room Occupancy};
+
+% Associations: Student (Direct, zero crossings)
+\draw[assoc] (student.north) to[out=60, in=195] (uc_login.west);
 \draw[assoc] (student) -- (uc_profile);
 \draw[assoc] (student) -- (uc_lodge);
 \draw[assoc] (student) -- (uc_track);
 
-% Associations: Admin
-\draw[assoc] (admin) -- (uc_login);
+% Associations: Admin (Direct, smooth top arch to UC-01 passing cleanly above UC-05 and UC-06)
+\draw[assoc] (admin.north) to[out=120, in=345] (uc_login.east);
 \draw[assoc] (admin) -- (uc_dash);
 \draw[assoc] (admin) -- (uc_alloc);
 \draw[assoc] (admin) -- (uc_triage);
@@ -1224,134 +1228,61 @@ Figure~\ref{fig:use_case} models interactions for the \textbf{Student} and \text
 \label{fig:use_case}
 \end{figure}
 
-\subsection{UML Sequence Diagram}
-\label{sec:seqdiag}
-Figure~\ref{fig:sequence_diagram} models the execution flow of a room allocation transaction with capacity and duplicate allocation verification.
-
-\begin{figure}[htbp]
-\centering
-\resizebox{0.96\textwidth}{!}{%
-\begin{tikzpicture}[
-    font=\sffamily\footnotesize,
-    lifeline/.style={draw=navyblue!70, dashed, line width=0.8pt},
-    actorbox/.style={draw=navyblue, fill=blue!10, rounded corners=3pt, font=\small\bfseries, inner sep=6pt, align=center},
-    msg/.style={-{Latex[length=2.5mm]}, line width=0.85pt, color=navyblue},
-    retmsg/.style={-{Latex[length=2.5mm]}, dashed, line width=0.85pt, color=teal!70!black},
-    boxactive/.style={draw=navyblue, fill=blue!15, line width=0.6pt},
-    notebox/.style={draw=navyblue!60, fill=yellow!12, rounded corners=3pt, font=\scriptsize, align=center, inner sep=4pt}
-]
-
-% Lifeline Entities (Spaced generously for SQL readability)
-\node[actorbox] (browser) at (0, 0) {Client Portal\\(Browser / Admin)};
-\node[actorbox] (server)  at (3.8, 0) {httplib::Server\\(Router)};
-\node[actorbox] (alloc)   at (8.2, 0) {AllocationAPI\\(Controller)};
-\node[actorbox] (db)      at (16.2, 0) {MySQL Server\\(Database)};
-
-% Lifelines (Extending down to -14.8)
-\draw[lifeline] (browser.south) -- (0, -14.8);
-\draw[lifeline] (server.south)  -- (3.8, -14.8);
-\draw[lifeline] (alloc.south)   -- (8.2, -14.8);
-\draw[lifeline] (db.south)      -- (16.2, -14.8);
-
-% Activation Bars
-\draw[boxactive] (3.7, -1.2) rectangle (3.9, -13.6);
-\draw[boxactive] (8.1, -2.2) rectangle (8.3, -12.6);
-\draw[boxactive] (16.1, -3.5) rectangle (16.3, -4.5);
-\draw[boxactive] (16.1, -5.8) rectangle (16.3, -6.8);
-\draw[boxactive] (16.1, -8.1) rectangle (16.3, -9.1);
-\draw[boxactive] (16.1, -10.4) rectangle (16.3, -11.4);
-
-% Step 1: Client Request (Split method and payload cleanly)
-\draw[msg] (0, -1.2) -- (3.8, -1.2) node[midway, above=1pt, font=\scriptsize\bfseries] {POST /api/allocations};
-\node[font=\tiny\color{codegray}, below=1pt] at (1.9, -1.2) {Payload: \{student\_id: 101, room\_id: 5\}};
-
-% Step 2: Route Dispatch
-\draw[msg] (3.8, -2.2) -- (8.2, -2.2) node[midway, above=1pt, font=\scriptsize\bfseries] {handleCreateAllocation(req, res)};
-
-% Step 3: Validate Student Existence
-\draw[msg] (8.2, -3.5) -- (16.2, -3.5) node[midway, above=1pt, font=\scriptsize\ttfamily] {SELECT student\_id FROM students WHERE student\_id = 101};
-\draw[retmsg] (16.2, -4.5) -- (8.2, -4.5) node[midway, above=1pt, font=\scriptsize\bfseries\color{teal!80!black}] {Student record verified (Record exists)};
-
-% Step 4: Verify No Simultaneous Active Allocations
-\draw[msg] (8.2, -5.8) -- (16.2, -5.8) node[midway, above=1pt, font=\scriptsize\ttfamily] {SELECT COUNT(*) FROM allocations WHERE student\_id=101 AND end\_date IS NULL};
-\draw[retmsg] (16.2, -6.8) -- (8.2, -6.8) node[midway, above=1pt, font=\scriptsize\bfseries\color{teal!80!black}] {Active Count = 0 (Eligible for allotment)};
-
-% Step 5: Check Room Capacity Constraints
-\draw[msg] (8.2, -8.1) -- (16.2, -8.1) node[midway, above=1pt, font=\scriptsize\ttfamily] {SELECT capacity, (SELECT COUNT(*) FROM allocations ...) AS occupied};
-\draw[retmsg] (16.2, -9.1) -- (8.2, -9.1) node[midway, above=1pt, font=\scriptsize\bfseries\color{teal!80!black}] {Capacity = 2, Occupied = 1 (Vacant bed confirmed)};
-
-% Step 6: Atomic Insert of Allocation Record
-\draw[msg] (8.2, -10.4) -- (16.2, -10.4) node[midway, above=1pt, font=\scriptsize\ttfamily] {INSERT INTO allocations (student\_id, room\_id, allocation\_date) VALUES (...)};
-\draw[retmsg] (16.2, -11.4) -- (8.2, -11.4) node[midway, above=1pt, font=\scriptsize\bfseries\color{teal!80!black}] {Query OK, Rows Affected = 1 (Allotment Persisted)};
-
-% Step 7: Controller Response Serialization
-\draw[retmsg] (8.2, -12.6) -- (3.8, -12.6) node[midway, above=1pt, font=\scriptsize] {res.set\_content(\{"success": true\}, "application/json")};
-
-% Step 8: HTTP Response to Client
-\draw[retmsg] (3.8, -13.6) -- (0, -13.6) node[midway, above=1pt, font=\scriptsize\bfseries] {HTTP 201 Created (JSON Response)};
-
-% Step 9: UI Refresh
-\node[notebox] at (0, -14.4) {Update UI Table \& Live Status Badges};
-
-\end{tikzpicture}
-}
-\caption{UML Sequence Diagram: Room Allocation Transaction with Capacity Verification}
-\label{fig:sequence_diagram}
-\end{figure}
-
 \subsection{UML Activity Diagram}
 \label{sec:actdiag}
-Figure~\ref{fig:activity_diagram} captures the lifecycle of a student maintenance grievance ticket.
+Figure~\ref{fig:activity_diagram} captures the end-to-end lifecycle of a student maintenance grievance ticket.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\resizebox{0.75\textwidth}{!}{%
+\resizebox{0.92\textwidth}{!}{%
 \begin{tikzpicture}[
-    font=\sffamily\small,
-    startstop/.style={circle, fill=black, inner sep=4pt},
-    endstop/.style={circle, draw=black, line width=1pt, fill=black, inner sep=2.5pt},
-    outerend/.style={circle, draw=black, line width=1pt, inner sep=5pt},
-    activity/.style={draw=navyblue, fill=blue!5, rounded corners=6pt, line width=0.8pt, align=center, inner sep=6pt},
-    decision/.style={draw=navyblue, fill=orange!10, diamond, aspect=1.6, line width=0.8pt, align=center, inner sep=4pt},
-    arrow/.style={-{Latex[length=2.5mm]}, line width=0.8pt, color=navyblue}
+    font=\sffamily\scriptsize,
+    startstop/.style={circle, fill=black, inner sep=3.5pt},
+    endstop/.style={circle, draw=navyblue, line width=1pt, fill=navyblue, inner sep=2.5pt},
+    outerend/.style={circle, draw=navyblue, line width=1pt, inner sep=5pt},
+    activity/.style={draw=navyblue, fill=blue!5, rounded corners=4pt, line width=0.8pt, align=center, inner sep=5pt, text width=4.0cm},
+    decision/.style={draw=navyblue, fill=orange!10, diamond, aspect=1.8, line width=0.8pt, align=center, inner sep=3pt, text width=2.4cm},
+    arrow/.style={-{Latex[length=2.5mm]}, line width=0.85pt, color=navyblue},
+    phasebox/.style={draw=navyblue!40, fill=blue!2, rounded corners=6pt, line width=0.8pt, dashed}
 ]
 
+% Phase 1: Resident Student Grievance Submission (Left Column: x = 0)
 \node[startstop] (start) at (0, 0) {};
+\node[activity, below=0.6cm of start] (submit) {Student fills grievance form\\(Description \& Student ID)};
+\node[decision, below=0.7cm of submit] (validate) {Valid length?\\($1 \le \text{len} \le 500$)};
+\node[activity, right=1.2cm of validate, text width=2.6cm] (error) {Display error alert\\(Invalid length)};
+\node[activity, below=0.7cm of validate] (insert) {Sanitize input \& insert to MySQL\\(Initial status: \textbf{'Pending'})};
 
-\node[activity, below=0.8cm of start] (submit) {Student fills grievance form\\(Description \& Student ID)};
-\node[decision, below=0.9cm of submit] (validate) {Valid input?\\($1 \le \text{length} \le 500$)};
-
-\node[activity, right=2.0cm of validate] (error) {Display error alert\\(Invalid length)};
-\node[activity, below=1.0cm of validate] (sanitize) {Sanitize SQL input via\\\texttt{mysql\_real\_escape\_string()}};
-\node[activity, below=0.8cm of sanitize] (insert) {Insert complaint into MySQL\\(Initial status: \textbf{'Pending'})};
-
-\node[activity, below=0.9cm of insert] (warden_view) {Warden inspects grievance\\queue in Admin Portal};
-\node[decision, below=0.9cm of warden_view] (triage) {Action\\taken?};
-
-\node[activity, below=1.0cm of triage] (progress) {Update status to\\\textbf{'In Progress'}};
-\node[activity, below=0.8cm of progress] (dispatch) {Maintenance personnel\\repairs facility / fault};
-\node[activity, below=0.8cm of dispatch] (resolve) {Warden updates status to\\\textbf{'Resolved'}};
-
-\node[activity, below=0.8cm of resolve] (notify) {Student views live\\\textbf{'Resolved'} badge in portal};
-
-\node[outerend, below=0.8cm of notify] (endout) {};
+% Phase 2: Administrative Triage & Resolution (Right Column: x = 7.5)
+\node[activity, at={(7.5, -0.6)}] (warden_view) {Warden inspects grievance queue in Admin Portal};
+\node[decision, below=0.7cm of warden_view] (triage) {Action\\taken?};
+\node[activity, below=0.7cm of triage] (progress) {Assign technician \& set status to\\\textbf{'In Progress'}};
+\node[activity, below=0.6cm of progress] (resolve) {Maintenance repairs fault; warden sets status to \textbf{'Resolved'}};
+\node[activity, below=0.6cm of resolve] (notify) {Student views live\\\textbf{'Resolved'} badge in portal};
+\node[outerend, below=0.6cm of notify] (endout) {};
 \node[endstop] at (endout) {};
 
-% Connections
+% Connections - Phase 1
 \draw[arrow] (start) -- (submit);
 \draw[arrow] (submit) -- (validate);
-\draw[arrow] (validate) -- node[above, font=\footnotesize] {No} (error);
+\draw[arrow] (validate) -- node[above, font=\tiny\bfseries] {No} (error);
 \draw[arrow] (error) |- (submit);
-\draw[arrow] (validate) -- node[right, font=\footnotesize] {Yes} (sanitize);
-\draw[arrow] (sanitize) -- (insert);
-\draw[arrow] (insert) -- (warden_view);
+\draw[arrow] (validate) -- node[right, font=\tiny\bfseries] {Yes} (insert);
+
+% Bridge between Phase 1 and Phase 2
+\draw[arrow] (insert.east) -| ++(0.6, 0) |- (warden_view.west) node[pos=0.25, above, font=\tiny\bfseries] {Ticket Dispatched};
+
+% Connections - Phase 2
 \draw[arrow] (warden_view) -- (triage);
-\draw[arrow] (triage) -- node[right, font=\footnotesize] {Assigned} (progress);
-\draw[arrow] (triage.east) -- ++(1.5,0) |- node[near start, right, font=\footnotesize] {Resolved directly} (resolve.east);
-\draw[arrow] (progress) -- (dispatch);
-\draw[arrow] (dispatch) -- (resolve);
+\draw[arrow] (triage) -- node[right, font=\tiny\bfseries] {Assign} (progress);
+\draw[arrow] (triage.east) -- ++(1.4, 0) |- node[near start, right, font=\tiny\bfseries] {Direct Resolve} (resolve.east);
+\draw[arrow] (progress) -- (resolve);
 \draw[arrow] (resolve) -- (notify);
 \draw[arrow] (notify) -- (endout);
+
+% Phase Headings
+\node[font=\footnotesize\bfseries\color{navyblue}, above=6pt of start] {Phase 1: Student Submission};
+\node[font=\footnotesize\bfseries\color{navyblue}, at={(7.5, 0.45)}] {Phase 2: Warden Triage \& Resolution};
 
 \end{tikzpicture}
 }
